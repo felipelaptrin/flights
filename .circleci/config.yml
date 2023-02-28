@@ -45,7 +45,7 @@ jobs:
                 registry-id: AWS_ECR_REGISTRY_ID
                 region: us-east-1
                 setup-remote-docker: true
-                role-name: $AWS_ROLE_OIDC
+                role-arn: $AWS_ROLE_OIDC
 
 workflows:
   build-and-deploy:
