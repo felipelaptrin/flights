@@ -12,6 +12,13 @@ jobs:
   build-and-push:
     executor: docker-python
     resource_class: small
+    parameters:
+      repo-name:
+        type: string
+        description: Name of the ECR repo
+      folder-name:
+        type: string
+        description: Name of the folder containing the code
     steps:
       - checkout
       - run:
@@ -19,46 +26,22 @@ jobs:
           command: |
             REF=HEAD
             SINCE=origin/main
-            DIR_TO_CHECK=flight-crawler
+            DIR_TO_CHECK=<< parameters.folder-name >>
 
             MERGE_BASE=$(git merge-base ${SINCE} ${REF})
             FILES_CHANGED=$(git diff --name-only ${MERGE_BASE}..${REF} -- ${DIR_TO_CHECK})
 
             if [[ -n $FILES_CHANGED ]]; then
-              echo 'export CRAWLER_CHANGES_IN_FOLDER="TRUE"' >> "$BASH_ENV"
+              echo 'export CHANGES_IN_FOLDER="TRUE"' >> "$BASH_ENV"
               source $BASH_ENV
             fi
-            echo $CRAWLER_CHANGES_IN_FOLDER
+            echo $CHANGES_IN_FOLDER
       - when:
-          condition: $CRAWLER_CHANGES_IN_FOLDER
+          condition: $CHANGES_IN_FOLDER
           steps:
             - aws-ecr/build-and-push-image:
-                repo: flights-crawler
-                path: flight-crawler
-                registry-id: AWS_ECR_REGISTRY_ID
-                region: us-east-1
-                setup-remote-docker: true
-      - run:
-          name: Check changes in manager folder
-          command: |
-            REF=HEAD
-            SINCE=origin/main
-            DIR_TO_CHECK=flight-manager
-
-            MERGE_BASE=$(git merge-base ${SINCE} ${REF})
-            FILES_CHANGED=$(git diff --name-only ${MERGE_BASE}..${REF} -- ${DIR_TO_CHECK})
-
-            if [[ -n $FILES_CHANGED ]]; then
-              echo 'export MANAGER_CHANGES_IN_FOLDER="TRUE"' >> "$BASH_ENV"
-              source $BASH_ENV
-            fi
-            echo $MANAGER_CHANGES_IN_FOLDER
-      - when:
-          condition: $MANAGER_CHANGES_IN_FOLDER
-          steps:
-            - aws-ecr/build-and-push-image:
-                repo: flights-manager
-                path: flight-manager
+                repo: << parameters.repo-name >>
+                path: << parameters.folder-name >>
                 registry-id: AWS_ECR_REGISTRY_ID
                 region: us-east-1
                 setup-remote-docker: true
@@ -66,4 +49,11 @@ jobs:
 workflows:
   build-and-deploy:
     jobs:
-      - build-and-push
+      - build-and-push:
+          name: build-crawler
+          repo-name: flights-crawler
+          folder-name: flight-crawler
+      - build-and-push:
+          name: build-manager
+          repo-name: flights-manager
+          folder-name: flight-manager
