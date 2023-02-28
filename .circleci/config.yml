@@ -1,0 +1,72 @@
+version: 2.1
+
+orbs:
+  aws-ecr: circleci/aws-ecr@8.2.1
+
+executors:
+  docker-python:
+    docker:
+      - image: cimg/python:2023.02
+
+jobs:
+  build-and-push:
+    executor: docker-python
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Check changes in crawler folder
+          command: |
+            LATEST_COMMIT=$(git rev-parse HEAD)
+            CRAWLER_CHANGES_IN_FOLDER=$(git log -1 --format=format:%H --full-diff flights_crawler)
+
+            if [ $FOLDER_CHANGES = $LATEST_COMMIT ]; then
+              echo 'export CRAWLER_CHANGES_IN_FOLDER="TRUE"' >> "$BASH_ENV"
+            fi
+      - when:
+          condition:
+            equal: ["TRUE", $CRAWLER_CHANGES_IN_FOLDER]
+          steps:
+            - build-and-push-image:
+                repo: flights-crawler
+                path: flights_crawler
+                registry-id: AWS_ECR_REGISTRY_ID
+                region: us-east-1
+                setup-remote-docker: true
+      - run:
+          name: Check changes in manager folder
+          command: |
+            LATEST_COMMIT=$(git rev-parse HEAD)
+            MANAGER_CHANGES_IN_FOLDER=$(git log -1 --format=format:%H --full-diff flights_manager)
+
+            if [ $FOLDER_CHANGES = $LATEST_COMMIT ]; then
+              echo 'export MANAGER_CHANGES_IN_FOLDER="TRUE"' >> "$BASH_ENV"
+            fi
+      - when:
+          condition:
+            equal: ["TRUE", $MANAGER_CHANGES_IN_FOLDER]
+          steps:
+            - build-and-push-image:
+                repo: flights-crawler
+                path: flights_crawler
+                registry-id: AWS_ECR_REGISTRY_ID
+                region: us-east-1
+                setup-remote-docker: true
+            - run: aws lambda
+
+  build-flights-manager:
+    executor: docker-python
+    resource_class: small
+    steps:
+      - checkout
+      - build-and-push-image:
+          repo: flights-manager
+          path: flights_manager
+          registry-id: AWS_ECR_REGISTRY_ID
+          region: us-east-1
+          setup-remote-docker: true
+
+workflows:
+  build-and-deploy:
+    jobs:
+      - build-and-push
