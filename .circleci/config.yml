@@ -45,6 +45,7 @@ jobs:
                 registry-id: AWS_ECR_REGISTRY_ID
                 region: us-east-1
                 setup-remote-docker: true
+                role-name: $AWS_ROLE_OIDC
 
 workflows:
   build-and-deploy:
@@ -53,7 +54,11 @@ workflows:
           name: build-crawler
           repo-name: flights-crawler
           folder-name: flight-crawler
+          context:
+            - CircleCI-OIDC
       - build-and-push:
           name: build-manager
           repo-name: flights-manager
           folder-name: flight-manager
+          context:
+            - CircleCI-OIDC
