@@ -46,6 +46,7 @@ jobs:
                 region: us-east-1
                 setup-remote-docker: true
                 role-arn: $AWS_ROLE_OIDC
+                assume-web-identity: true
 
 workflows:
   build-and-deploy:
