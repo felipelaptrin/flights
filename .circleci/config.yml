@@ -17,10 +17,14 @@ jobs:
       - run:
           name: Check changes in crawler folder
           command: |
-            LATEST_COMMIT=$(git rev-parse HEAD)
-            CRAWLER_CHANGES_IN_FOLDER=$(git log -1 --format=format:%H --full-diff flight-crawler)
+            REF=HEAD
+            SINCE=origin/main
+            DIR_TO_CHECK=flight-crawler
 
-            if [ $FOLDER_CHANGES = $LATEST_COMMIT ]; then
+            MERGE_BASE=$(git merge-base ${SINCE} ${REF})
+            FILES_CHANGED=$(git diff --name-only ${MERGE_BASE}..${REF} -- ${DIR_TO_CHECK})
+
+            if [[ -n $FILES_CHANGED ]]; then
               echo 'export CRAWLER_CHANGES_IN_FOLDER="TRUE"' >> "$BASH_ENV"
             fi
       - when:
@@ -36,10 +40,14 @@ jobs:
       - run:
           name: Check changes in manager folder
           command: |
-            LATEST_COMMIT=$(git rev-parse HEAD)
-            MANAGER_CHANGES_IN_FOLDER=$(git log -1 --format=format:%H --full-diff flight-manager)
+            REF=HEAD
+            SINCE=origin/main
+            DIR_TO_CHECK=flight-manager
 
-            if [ $FOLDER_CHANGES = $LATEST_COMMIT ]; then
+            MERGE_BASE=$(git merge-base ${SINCE} ${REF})
+            FILES_CHANGED=$(git diff --name-only ${MERGE_BASE}..${REF} -- ${DIR_TO_CHECK})
+
+            if [[ -n $FILES_CHANGED ]]; then
               echo 'export MANAGER_CHANGES_IN_FOLDER="TRUE"' >> "$BASH_ENV"
             fi
       - when:
