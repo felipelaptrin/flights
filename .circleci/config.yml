@@ -6,7 +6,7 @@ orbs:
 executors:
   docker-python:
     docker:
-      - image: cimg/python:2023.02
+      - image: cimg/base:2023.02
 
 jobs:
   build-and-push:
