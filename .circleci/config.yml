@@ -27,6 +27,7 @@ jobs:
             if [[ -n $FILES_CHANGED ]]; then
               echo 'export CRAWLER_CHANGES_IN_FOLDER="TRUE"' >> "$BASH_ENV"
             fi
+            echo $CRAWLER_CHANGES_IN_FOLDER
       - when:
           condition:
             equal: ["TRUE", $CRAWLER_CHANGES_IN_FOLDER]
@@ -50,6 +51,7 @@ jobs:
             if [[ -n $FILES_CHANGED ]]; then
               echo 'export MANAGER_CHANGES_IN_FOLDER="TRUE"' >> "$BASH_ENV"
             fi
+            echo $MANAGER_CHANGES_IN_FOLDER
       - when:
           condition:
             equal: ["TRUE", $MANAGER_CHANGES_IN_FOLDER]
