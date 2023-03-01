@@ -12,48 +12,45 @@ jobs:
   build-and-push:
     executor: docker-python
     resource_class: small
+    parameters:
+      repo-name:
+        type: string
+        description: Name of the ECR repo
+      folder-name:
+        type: string
+        description: Name of the folder containing the code
     steps:
       - checkout
+      - setup_remote_docker
+      - aws-ecr/ecr-login:
+          assume-web-identity: true
+          role-arn: $AWS_ROLE_OIDC
       - run:
           name: Check changes in crawler folder
           command: |
-            LATEST_COMMIT=$(git rev-parse HEAD)
-            CRAWLER_CHANGES_IN_FOLDER=$(git log -1 --format=format:%H --full-diff flight-crawler)
+            REF=HEAD
+            SINCE=origin/main
+            DIR_TO_CHECK=<< parameters.folder-name >>
 
-            if [ $FOLDER_CHANGES = $LATEST_COMMIT ]; then
-              echo 'export CRAWLER_CHANGES_IN_FOLDER="TRUE"' >> "$BASH_ENV"
-            fi
-      - when:
-          condition:
-            equal: ["TRUE", $CRAWLER_CHANGES_IN_FOLDER]
-          steps:
-            - aws-ecr/build-and-push-image:
-                repo: flights-crawler
-                path: flight-crawler
-                registry-id: AWS_ECR_REGISTRY_ID
-                region: us-east-1
-                setup-remote-docker: true
-      - run:
-          name: Check changes in manager folder
-          command: |
-            LATEST_COMMIT=$(git rev-parse HEAD)
-            MANAGER_CHANGES_IN_FOLDER=$(git log -1 --format=format:%H --full-diff flight-manager)
+            MERGE_BASE=$(git merge-base ${SINCE} ${REF})
+            FILES_CHANGED=$(git diff --name-only ${MERGE_BASE}..${REF} -- ${DIR_TO_CHECK})
 
-            if [ $FOLDER_CHANGES = $LATEST_COMMIT ]; then
-              echo 'export MANAGER_CHANGES_IN_FOLDER="TRUE"' >> "$BASH_ENV"
+            if [[ -n $FILES_CHANGED ]]; then
+              docker buildx build -f << parameters.folder-name >>/Dockerfile -t $AWS_ECR_REGISTRY_ID.dkr.ecr.$AWS_REGION.amazonaws.com/<< parameters.repo-name >>:latest --platform linux/amd64 --progress plain --push << parameters.folder-name >>
             fi
-      - when:
-          condition:
-            equal: ["TRUE", $MANAGER_CHANGES_IN_FOLDER]
-          steps:
-            - aws-ecr/build-and-push-image:
-                repo: flights-manager
-                path: flight-manager
-                registry-id: AWS_ECR_REGISTRY_ID
-                region: us-east-1
-                setup-remote-docker: true
 
 workflows:
   build-and-deploy:
     jobs:
-      - build-and-push
+      - build-and-push:
+          name: build-crawler
+          repo-name: flights-crawler
+          folder-name: flight-crawler
+          context:
+            - CircleCI-OIDC
+      - build-and-push:
+          name: build-manager
+          repo-name: flights-manager
+          folder-name: flight-manager
+          context:
+            - CircleCI-OIDC
