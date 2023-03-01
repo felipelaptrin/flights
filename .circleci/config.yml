@@ -19,6 +19,7 @@ jobs:
       folder-name:
         type: string
         description: Name of the folder containing the code
+    working_directory: << parameters.folder-name >>
     steps:
       - checkout
       - run:
@@ -36,13 +37,11 @@ jobs:
               source $BASH_ENV
             fi
             echo $CHANGES_IN_FOLDER
-            cd << parameters.folder-name >>
       - when:
           condition: $CHANGES_IN_FOLDER
           steps:
             - aws-ecr/build-and-push-image:
                 repo: << parameters.repo-name >>
-                path: << parameters.folder-name >>
                 registry-id: AWS_ECR_REGISTRY_ID
                 region: us-east-1
                 setup-remote-docker: true
