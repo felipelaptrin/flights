@@ -36,6 +36,7 @@ jobs:
               source $BASH_ENV
             fi
             echo $CHANGES_IN_FOLDER
+            cd << parameters.folder-name >>
       - when:
           condition: $CHANGES_IN_FOLDER
           steps:
