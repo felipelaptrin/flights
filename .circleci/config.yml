@@ -37,7 +37,8 @@ jobs:
             fi
             echo $CHANGES_IN_FOLDER
       - when:
-          condition: $CHANGES_IN_FOLDER
+          condition:
+            equal: [$CHANGES_IN_FOLDER, "TRUE"]
           steps:
             - aws-ecr/build-and-push-image:
                 repo: << parameters.repo-name >>
