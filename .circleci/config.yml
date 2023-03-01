@@ -32,23 +32,8 @@ jobs:
             FILES_CHANGED=$(git diff --name-only ${MERGE_BASE}..${REF} -- ${DIR_TO_CHECK})
 
             if [[ -n $FILES_CHANGED ]]; then
-              echo 'export CHANGES_IN_FOLDER="TRUE"' >> "$BASH_ENV"
-              source $BASH_ENV
+              docker buildx build -f << parameters.folder-name >>/Dockerfile -t $AWS_ECR_REGISTRY_ID.dkr.ecr.$AWS_REGION.amazonaws.com/<< parameters.repo-name >>:latest --platform linux/amd64 --progress plain --push << parameters.folder-name >>
             fi
-            echo $CHANGES_IN_FOLDER
-      - when:
-          condition:
-            equal: [$CHANGES_IN_FOLDER, "TRUE"]
-          steps:
-            - aws-ecr/build-and-push-image:
-                repo: << parameters.repo-name >>
-                path: << parameters.folder-name >>
-                build-path: << parameters.folder-name >>
-                registry-id: AWS_ECR_REGISTRY_ID
-                region: us-east-1
-                setup-remote-docker: true
-                role-arn: $AWS_ROLE_OIDC
-                assume-web-identity: true
 
 workflows:
   build-and-deploy:
