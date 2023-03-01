@@ -22,6 +22,9 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - aws-ecr/ecr-login:
+          assume-web-identity: true
+          role-arn: $AWS_ROLE_OIDC
       - run:
           name: Check changes in crawler folder
           command: |
