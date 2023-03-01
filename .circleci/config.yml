@@ -19,7 +19,7 @@ jobs:
       folder-name:
         type: string
         description: Name of the folder containing the code
-    working_directory: ~/project/flight-manager/<< parameters.folder-name >>
+    working_directory: ~/project/flight/<< parameters.folder-name >>
     steps:
       - checkout
       - run:
