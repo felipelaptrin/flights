@@ -42,6 +42,7 @@ jobs:
           steps:
             - aws-ecr/build-and-push-image:
                 repo: << parameters.repo-name >>
+                path: << parameters.folder-name >>
                 registry-id: AWS_ECR_REGISTRY_ID
                 region: us-east-1
                 setup-remote-docker: true
