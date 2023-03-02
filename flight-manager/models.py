@@ -1,12 +1,11 @@
 from datetime import datetime
 
+from config import DATE_FORMAT
 from pydantic import BaseModel, validator
 from pydantic.types import PositiveInt
 
-DATE_FORMAT = "%d/%m/%Y"
 
-
-class FlightsParser(BaseModel):
+class Flights(BaseModel):
     max_departure_date_destination: datetime
     min_departure_date_origin: datetime
     origin: str
@@ -33,8 +32,10 @@ class FlightsParser(BaseModel):
             raise Exception(
                 "minDepartureDateOrigin can't be before than maxDepartureDateDestination"
             )
+        return v
 
     @validator("max_stay_days")
     def validate_range_stay(cls, v, values):
         if v < values["min_stay_days"]:
             raise Exception("minStayDays must be higher than maxStayDays")
+        return v

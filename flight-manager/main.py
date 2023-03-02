@@ -6,31 +6,22 @@ from logging import Logger
 from typing import List, Tuple
 
 import boto3
-
-DATE_FORMAT = "%d/%m/%Y"
+from config import AWS_REGION, CRAWLER_LAMBDA_NAME, DRY_RUN, LOGGER_LEVEL, MAX_CRAWLERS
+from models import Flights
 
 
 class FlightsManager:
     def __init__(
         self,
-        origin: str,
-        destination: str,
-        min_departure_date_origin: str,
-        max_departure_date_destination: str,
-        min_stay_days: int,
-        max_stay_days: int,
+        flights: Flights,
     ):
-        self.min_departure_date_origin = datetime.strptime(
-            min_departure_date_origin, DATE_FORMAT
-        )
-        self.max_departure_date_destination = datetime.strptime(
-            max_departure_date_destination, DATE_FORMAT
-        )
-        self.min_stay_days = min_stay_days
-        self.max_stay_days = max_stay_days
-        self.origin = origin
-        self.destination = destination
-        self.__logger_level = os.getenv("LOGGER_LEVEL", "INFO")
+        self.min_departure_date_origin = flights.min_departure_date_origin
+        self.max_departure_date_destination = flights.max_departure_date_destination
+        self.min_stay_days = flights.min_stay_days
+        self.max_stay_days = flights.max_stay_days
+        self.origin = flights.origin
+        self.destination = flights.destination
+        self.__logger_level = LOGGER_LEVEL
         self.logger = self.__get_logger()
 
     def __get_logger(self) -> Logger:
@@ -62,69 +53,68 @@ class FlightsManager:
                 possible_dates.append(
                     (possible_departure_date_origin, possible_departure_date_destination)
                 )
+        self.logger.debug(
+            f"Possible travel dates retrieved sucessfully! {len(possible_dates)} possible travel dates retrieved!"
+        )
         return possible_dates
+
+    def trigger_crawler(self, departure_date_origin: str, departure_date_destination: str):
+        lambda_client = boto3.client("lambda", region_name=AWS_REGION)
+        payload = bytes(
+            json.dumps(
+                {
+                    "departureDateOrigin": self.__serialize_datetime(departure_date_origin),
+                    "departureDateDestination": self.__serialize_datetime(
+                        departure_date_destination
+                    ),
+                    "origin": self.origin,
+                    "destination": self.destination,
+                },
+            ),
+            encoding="utf8",
+        )
+        try:
+            success_message = f"Triggered crawer on dates {departure_date_origin}-{departure_date_destination}"
+            if DRY_RUN == "TRUE":
+                self.logger.info(f"[DRY RUN] {success_message}")
+            else:
+                lambda_client.invoke(
+                    FunctionName=CRAWLER_LAMBDA_NAME, InvocationType="Event", Payload=payload
+                )
+                self.logger.info(success_message)
+        except Exception as e:
+            self.logger.error("Could not trigger AWS Lambda crawler due to: {e}")
 
     def start_crawlers(self):
         self.logger.info("Started to trigger lambdas to start to crawl the pages...")
         possible_travel_dates = self.get_possible_travel_dates()
-        if len(possible_travel_dates) > int(os.getenv("MAX_POSSIBLE_DATES", 100)):
-            error_message = f"The number of pages to crawl is too high ({len(possible_travel_dates)}). Please set 'MAX_POSSIBLE_DATES' accordingly."
+
+        if len(possible_travel_dates) > MAX_CRAWLERS:
+            error_message = f"The number of pages to crawl is too high ({len(possible_travel_dates)}). Please set 'MAX_CRAWLERS' accordingly."
             self.logger.error(error_message)
             raise Exception(error_message)
+
         for possible_travel_date in possible_travel_dates:
-            lambda_client = boto3.client("lambda", region_name=os.getenv("AWS_REGION"))
-            response = lambda_client.invoke(
-                FunctionName=os.getenv("CRAWLER_LAMBDA_NAME"),
-                InvocationType="Event",
-                Payload=bytes(
-                    json.dumps(
-                        {
-                            "departureDateOrigin": self.__serialize_datetime(
-                                possible_travel_date[0]
-                            ),
-                            "departureDateDestination": self.__serialize_datetime(
-                                possible_travel_date[1]
-                            ),
-                            "origin": self.origin,
-                            "destination": self.destination,
-                        },
-                    ),
-                    encoding="utf8",
-                ),
-            )
-            print(response)
+            self.trigger_crawler(possible_travel_date[0], possible_travel_date[1])
 
     def __serialize_datetime(self, date: datetime) -> str:
         return date.strftime("%d/%m/%Y")
 
 
 def handler(event=None, context=None):
-    min_departure_date_origin = event["minDepartureDateOrigin"]
-    max_departure_date_destination = event["maxDepartureDateDestination"]
-    origin = event["origin"]
-    destination = event["destination"]
-    min_stay_days = event["minStayDays"]
-    max_stay_days = event["maxStayDays"]
+    print(f"Input event: {event}")
+    try:
+        flights = Flights(
+            min_departure_date_origin=event["minDepartureDateOrigin"],
+            max_departure_date_destination=event["maxDepartureDateDestination"],
+            origin=event["origin"],
+            destination=event["destination"],
+            min_stay_days=event["minStayDays"],
+            max_stay_days=event["maxStayDays"],
+        )
 
-    fm = FlightsManager(
-        origin,
-        destination,
-        min_departure_date_origin,
-        max_departure_date_destination,
-        min_stay_days,
-        max_stay_days,
-    )
-    if os.getenv("RUN_LOCALLY", "FALSE").upper() == "FALSE":
+        fm = FlightsManager(flights)
         fm.start_crawlers()
-        return {"statusCode": 200, "body": "Crawler run successfully"}
-    else:
-        flights = fm.get_possible_travel_dates()
-        flights_parsed = []
-        for flight in flights:
-            flights_parsed.append(
-                {
-                    "initialDate": flight[0].strftime("%d/%m/%Y"),
-                    "finalDate": flight[1].strftime("%d/%m/%Y"),
-                }
-            )
-        return {"statusCode": 200, "body": "Crawler run successfully", "data": flights_parsed}
+        return {"statusCode": 200, "body": "All crawler were triggered!"}
+    except Exception as e:
+        return {"statusCode": 500, "body": f"Error: {str(e)}"}
