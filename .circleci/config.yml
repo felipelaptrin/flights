@@ -4,13 +4,52 @@ orbs:
   aws-ecr: circleci/aws-ecr@8.2.1
 
 executors:
-  docker-python:
+  docker-base:
     docker:
       - image: cimg/base:2023.02
 
 jobs:
+  test_crawler:
+    executor: docker-base
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Build docker container
+          command: cd flights-crawler
+            docker build -t flight-crawler .
+      - run:
+          name: Run test
+          command: |
+            docker container run -d --rm --name flight-crawler -p 9000:8080 \
+              -e RUN_LOCALLY_WITH_HEADER='FALSE' \
+              -e CLUSTER_ID \
+              -e DB_USER \
+              -e DB_PASSWORD \
+              -e DB_NAME \
+              -e DB_CLUSTER \
+              -e DB_COLLECTION \
+              flight-crawler
+            sleep 2
+            curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" \
+              -d '{"minDepartureDateOrigin":"12/12/2023","maxDepartureDateDestination":"15/12/2023","origin":"Boston","destination":"Asia","minStayDays":5,"maxStayDays":7}'
+      - run:
+          name: Check if crawler run correctly
+          command: |
+            TIMEOUT=120 # time to timeout in seconds
+
+            SECONDS=0
+            while (( SECONDS < TIMEOUT )); do
+              LOGS_RESULT=$(docker logs flight-crawler --tail 5 | head -n 1)
+              echo $LOGS_RESULT
+              if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
+                exit 0
+              fi
+            done
+            docker logs flight-crawler
+            exit 1
   build-and-push:
-    executor: docker-python
+    executor: docker-base
     resource_class: small
     parameters:
       repo-name:
@@ -42,15 +81,22 @@ jobs:
 workflows:
   build-and-deploy:
     jobs:
+      - test_crawler:
+          context:
+            - DatabaseCredentials
       - build-and-push:
           name: build-crawler
           repo-name: flights-crawler
           folder-name: flight-crawler
           context:
             - CircleCI-OIDC
+          requires:
+            - test_crawler
       - build-and-push:
           name: build-manager
           repo-name: flights-manager
           folder-name: flight-manager
           context:
             - CircleCI-OIDC
+          requires:
+            - test_crawler
