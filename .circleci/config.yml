@@ -23,7 +23,7 @@ jobs:
       - run:
           name: Run test
           command: |
-            docker container run -d --rm --name flight-crawler -p 9000:8080 \
+            docker container run -d --rm --name flight-crawler -p 9000:8080 --network host \
               -e RUN_LOCALLY_WITH_HEADER='FALSE' \
               -e CLUSTER_ID \
               -e DB_USER \
