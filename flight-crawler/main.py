@@ -21,6 +21,7 @@ def handler(event=None, context=None):
         else:
             raise NotImplementedError("Not implemented yet!")
 
+        print("SUCCESS")  #! DO NOT DELETE - USED DURING CI TESTS
         return {"statusCode": 200, "body": "Crawler run successfully"}
     except Exception as e:
         print(e)
