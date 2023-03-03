@@ -16,7 +16,8 @@ jobs:
       - checkout
       - run:
           name: Build docker container
-          command: cd flights-crawler
+          command: |
+            cd flights-crawler
             docker build -t flight-crawler .
       - run:
           name: Run test
