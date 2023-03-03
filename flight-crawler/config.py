@@ -1,5 +1,12 @@
 import os
 
+
+def boolean_string_to_bool(string: str) -> bool:
+    if string.upper() == "TRUE":
+        return True
+    return False
+
+
 # SET PYTHON LOGGING LEVEL
 LOGGER_LEVEL = os.getenv("LOGGER_LEVEL", "INFO")
 
@@ -7,10 +14,13 @@ LOGGER_LEVEL = os.getenv("LOGGER_LEVEL", "INFO")
 DATE_FORMAT = "%d/%m/%Y"
 
 # RUN LOCALLY - USEFUL FOR DEBUGING AND DEVELOPMENT
-RUN_LOCALLY_WITH_HEADER = os.getenv("RUN_LOCALLY_WITH_HEADER", "FALSE").upper()
+RUN_LOCALLY_WITH_HEADER = boolean_string_to_bool(os.getenv("RUN_LOCALLY_WITH_HEADER", "FALSE"))
 
 # URL TO CRAWL
 GOOGLE_FLIGHTS_URL = os.getenv("GOOGLE_FLIGHTS_URL", "https://www.google.com/flights?hl=us")
+
+# IF DESTINATION IS GENERIC (REGION, CONTINENT..) AND NOT A COUNTRY/AIRPORT THIS MUST BE SET TO TRUE
+GENERIC_DESTINATION = boolean_string_to_bool(os.getenv("GENERIC_DESTINATION", "TRUE"))
 
 ################
 ### DB SETTINGS
