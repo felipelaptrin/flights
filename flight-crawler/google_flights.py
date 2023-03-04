@@ -181,7 +181,12 @@ class GoogleFlightsCrawler(Crawler):
         info_not_parsed = info_not_parsed.split("\n")
         self.logger.info(f"To be parsed => {info_not_parsed}")
 
-        _, _, _, _, duration, airports, number_of_stops, _, _, _, price, _ = info_not_parsed
+        if len(info_not_parsed) == 12:
+            _, _, _, _, duration, airports, number_of_stops, _, _, _, price, _ = info_not_parsed
+        elif len(info_not_parsed) == 13:
+            _, _, _, _, _, duration, airports, number_of_stops, _, _, _, price, _ = info_not_parsed
+        else:
+            raise Exception(f"Results couldn't be parsed: {info_not_parsed}")
 
         number_of_stops = int(number_of_stops.split(" ")[0])
 
