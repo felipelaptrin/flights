@@ -24,7 +24,7 @@ jobs:
       - run:
           name: Run container with generic destination
           command: |
-            ORIGIN_DATE=$(date '+%d/%m/%Y')
+            ORIGIN_DATE=$(date '+%d/%m/%Y' -d "+2 days")
             echo "Origin Date: $ORIGIN_DATE"
             DESTINATION_DATE=$(date '+%d/%m/%Y' -d "+5 days")
             echo "Destination Date: $DESTINATION_DATE"
@@ -63,7 +63,7 @@ jobs:
       - run:
           name: Run container with specific destination
           command: |
-            ORIGIN_DATE=$(date '+%d/%m/%Y')
+            ORIGIN_DATE=$(date '+%d/%m/%Y' -d "+2 days")
             echo "Origin Date: $ORIGIN_DATE"
             DESTINATION_DATE=$(date '+%d/%m/%Y' -d "+5 days")
             echo "Destination Date: $DESTINATION_DATE"
@@ -85,6 +85,7 @@ jobs:
       - run:
           name: Check if specific destination crawler run correctly
           command: |
+            sleep 2
             LOGS_RESULT=$(docker logs flight-crawler --tail 3 | head -n 1)
             echo "LOGS_RESULT -> $LOGS_RESULT"
             if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
