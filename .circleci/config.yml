@@ -46,7 +46,8 @@ jobs:
           name: Check if generic destination crawler run correctly
           command: |
             sleep 2
-            LOGS_RESULT=$(docker logs flight-crawler --tail 3 | head -n 1)
+            docker logs flight-crawler --tail 3 > /tmp/logs.txt
+            LOGS_RESULT=$(head /tmp/logs.txt -n 1)
             echo "LOGS_RESULT -> $LOGS_RESULT"
             if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
               echo "Success! Printing logs of the container..."
@@ -87,7 +88,8 @@ jobs:
           name: Check if specific destination crawler run correctly
           command: |
             sleep 2
-            LOGS_RESULT=$(docker logs flight-crawler --tail 3 | head -n 1)
+            docker logs flight-crawler --tail 3 > /tmp/logs.txt
+            LOGS_RESULT=$(head /tmp/logs.txt -n 1)
             echo "LOGS_RESULT -> $LOGS_RESULT"
             if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
               echo "Success! Printing logs of the container..."
