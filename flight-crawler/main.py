@@ -15,24 +15,15 @@ def handler(event=None, context=None):
         )
         print(f"Parsed input event => {flight}")
         google_flight_crawler = GoogleFlightsCrawler(flight)
+        google_flight_crawler.crawl_specific_destination()
         if GENERIC_DESTINATION:
             results = google_flight_crawler.crawl_generic_destinations()
-            if results:
-                Database().store_results(results)
         else:
-            raise NotImplementedError("Not implemented yet!")
-
+            results = google_flight_crawler.crawl_specific_destination()
         if results:
+            Database().store_results(results)
             print("SUCCESS")  #! DO NOT DELETE - USED DURING CI TESTS
         return {"statusCode": 200, "body": "Crawler run successfully"}
     except Exception as e:
         print(f"Something went wrong: {e}")
         return {"statusCode": 500, "body": f"Something went wrong: {str(e)}"}
-
-
-handler({
-    "departureDateOrigin":"10/03/2023",
-    "departureDateDestination": "15/03/2023",
-    "origin": "Boston",
-    "destination": "Asia",
-})

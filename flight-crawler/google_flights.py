@@ -76,18 +76,22 @@ class GoogleFlightsCrawler(Crawler):
         self.__input_itinerary(self.destination, XPATH_DESTINATION, XPATH_DESTINATION_SELECT)
         self.logger.info("Itinerary set correctly!")
 
-    def search_flights(self) -> None:
-        SEARCH_BUTTON_XPATH = "/html/body/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[1]/div[1]/div[2]/div/button/span[2]"
-
-        self.wait_clickable(5, SEARCH_BUTTON_XPATH)
-        self.click(SEARCH_BUTTON_XPATH)
-
-    def wait_search_results(self, max_timeout: int = 15) -> None:
+    def wait_generic_destination_search_results(self, max_timeout: int = 15) -> None:
         self.logger.info("Waiting results to show up...")
         path = self.__get_full_xpath_travel_destination_info(1)
 
         try:
             self.wait_presence(max_timeout, path)
+            self.logger.info("Results loaded...")
+        except:
+            print("Not able to load results!")
+
+    def wait_specific_destination_search_results(self, max_timeout: int = 15) -> None:
+        self.logger.info("Waiting results to show up...")
+        XPATH = "/html/body/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[2]/div[3]/ul/li[1]/div/div[3]/div/div/button/div[3]"
+
+        try:
+            self.wait_clickable(max_timeout, XPATH)
             self.logger.info("Results loaded...")
         except:
             print("Not able to load results!")
@@ -110,16 +114,14 @@ class GoogleFlightsCrawler(Crawler):
             if char.isdigit():
                 number.append(char)
             else:
-                currency.append(char)
+                currency.append(char) if char not in [",", ".", " "] else None
 
         currency = "".join(currency)
-        print(currency)
         number = int("".join(number))
-        print(number)
 
         return (number, currency)
 
-    def parse_destination_info(self, info_not_parsed: str) -> dict:
+    def parse_destination_info_generic_destination(self, info_not_parsed: str) -> dict:
         info_not_parsed = info_not_parsed.split("\n")
 
         if len(info_not_parsed) == 4:
@@ -151,7 +153,7 @@ class GoogleFlightsCrawler(Crawler):
             "currency": currency,
         }
 
-    def __get_all_flight_results(self) -> List[dict]:
+    def __get_all_flight_results_generic_destination(self) -> List[dict]:
         self.logger.info("Retrieving all flights results...")
         MAX_NUMBER_OF_RESULTS = 40
 
@@ -159,7 +161,7 @@ class GoogleFlightsCrawler(Crawler):
         for i in range(MAX_NUMBER_OF_RESULTS):
             try:
                 info = self.get_destination_info(i)
-                parsed_info = self.parse_destination_info(info)
+                parsed_info = self.parse_destination_info_generic_destination(info)
                 parsed_info["id"] = self.timestamp
                 parsed_info["stay_days"] = self.stay_days
                 parsed_info["departure_date_origin"] = self.departure_date_origin.strftime(
@@ -175,15 +177,94 @@ class GoogleFlightsCrawler(Crawler):
         self.logger.info("Flights results retrieved successfully")
         return results
 
+    def parse_destination_info_specific_destination(self, info_not_parsed: str) -> dict:
+        info_not_parsed = info_not_parsed.split("\n")
+        self.logger.info(f"To be parsed => {info_not_parsed}")
+
+        if len(info_not_parsed) == 12:
+            _, _, _, _, duration, airports, number_of_stops, _, _, _, price, _ = info_not_parsed
+        elif len(info_not_parsed) == 13:
+            _, _, _, _, _, duration, airports, number_of_stops, _, _, _, price, _ = info_not_parsed
+        else:
+            raise Exception(f"Results couldn't be parsed: {info_not_parsed}")
+
+        number_of_stops = int(number_of_stops.split(" ")[0])
+
+        duration_hours = int(duration.split("h")[0].strip())
+        if "min" in duration:
+            hour = "hr" if "hr" in duration else "h"
+            duration_min = re.search("%s(.*)%s" % (hour, "min"), duration).group(1)
+            print(duration_min)
+            duration_min = int(duration_min.strip())
+        else:
+            duration_min = 0
+        duration_hours_float = float(duration_hours + duration_min / 60)
+
+        price, currency = self.__get_price_and_currency(price)
+
+        destination = airports.split("–")[-1]
+
+        return {
+            "destination": destination,
+            "duration": duration_hours_float,
+            "stops": number_of_stops,
+            "price": price,
+            "currency": currency,
+        }
+
     def crawl_generic_destinations(
         self,
     ) -> List[dict]:
         self.driver.get(self.url)
         self.set_itineraty()
         self.set_dates()
-        self.wait_search_results()
-        results = self.__get_all_flight_results()
+        self.wait_generic_destination_search_results()
+        results = self.__get_all_flight_results_generic_destination()
 
+        self.logger.info(f"Crawled results => {results}")
+
+        return results
+
+    def __get_all_flight_results_specific_destination(self) -> List[dict]:
+        self.logger.info("Retrieving all flights results...")
+        MAX_NUMBER_OF_RESULTS = 40
+        BEST_FLIGHTS_XPATH = (
+            "/html/body/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[2]/div[3]/ul/li[REPLACE]"
+        )
+        OTHER_FLIGHTS_XPATH = (
+            "/html/body/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[2]/div[5]/ul/li[REPLACE]"
+        )
+        results = []
+        for i in range(MAX_NUMBER_OF_RESULTS):
+            try:
+                for xpath in [BEST_FLIGHTS_XPATH, OTHER_FLIGHTS_XPATH]:
+                    flight_xpath = xpath.replace("REPLACE", str(i))
+                    flight_info = self.select(flight_xpath).text
+                    flight_info_parsed = self.parse_destination_info_specific_destination(
+                        flight_info
+                    )
+
+                    flight_info_parsed["id"] = self.timestamp
+                    flight_info_parsed["stay_days"] = self.stay_days
+                    flight_info_parsed[
+                        "departure_date_origin"
+                    ] = self.departure_date_origin.strftime(DATE_FORMAT)
+                    flight_info_parsed[
+                        "departure_date_destination"
+                    ] = self.departure_date_destination.strftime(DATE_FORMAT)
+                    results.append(flight_info_parsed)
+            except Exception as e:
+                self.logger.error(f"Could not parse flight result => {e}")
+
+        self.logger.info("Flights results retrieved successfully")
+        return results
+
+    def crawl_specific_destination(self):
+        self.driver.get(self.url)
+        self.set_itineraty()
+        self.set_dates()
+        self.wait_specific_destination_search_results()
+        results = self.__get_all_flight_results_specific_destination()
         self.logger.info(f"Crawled results => {results}")
 
         return results
