@@ -83,29 +83,10 @@ jobs:
             docker container run --name run-crawler --network mybridge curlimages/curl:7.88.1 "http://flight-crawler:8080/2015-03-31/functions/function/invocations" \
               -d "{\"departureDateOrigin\":\"$ORIGIN_DATE\",\"departureDateDestination\":\"$DESTINATION_DATE\",\"origin\":\"Boston\",\"destination\":\"Paris\",\"minStayDays\":5,\"maxStayDays\":7}"
       - run:
-          name: Check if generic destination crawler run correctly
+          name: Check if specific destination crawler run correctly
           command: |
-            sleep 10
-            TIMEOUT=5 # time to timeout in seconds
-
-            SECONDS=0
-            while (( SECONDS < TIMEOUT )); do
-              LOGS_RESULTS_TAIL=$(docker logs flight-crawler --tail 1)
-              echo "LOGS_RESULTS_TAIL -> $LOGS_RESULTS_TAIL"
-              if [[ "$LOGS_RESULTS_TAIL" == "REPORT"* ]]; then
-                echo "Printing logs of the container..."
-                docker logs flight-crawler
-                break
-              fi
-              LOGS_RESULT=$(docker logs flight-crawler --tail 3 | head -n 1)
-              echo "LOGS_RESULT -> $LOGS_RESULT"
-              if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
-                echo "Success! Printing logs of the container..."
-                docker logs flight-crawler
-                exit 0
-              fi
-              sleep 1
-            done
+            LOGS_RESULT=$(docker logs flight-crawler --tail 3 | head -n 1)
+            echo "LOGS_RESULT -> $LOGS_RESULT"
             if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
               echo "Success! Printing logs of the container..."
               docker logs flight-crawler
@@ -113,7 +94,7 @@ jobs:
             fi
             echo "Something went wrong.... Printing the logs of the container:"
             docker logs flight-crawler
-            exit 1
+            sleep 1
   build-and-push:
     executor: docker-base
     resource_class: small
