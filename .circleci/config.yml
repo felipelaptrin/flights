@@ -24,7 +24,9 @@ jobs:
           name: Run test
           command: |
             ORIGIN_DATE=$(date '+%d/%m/%Y')
+            echo "Origin Date: $ORIGIN_DATE"
             DESTINATION_DATE=$(date '+%d/%m/%Y' -d "+5 days")
+            echo "Destination Date: $DESTINATION_DATE"
 
             docker network create mybridge
             docker container run -d --rm --name flight-crawler \
@@ -50,7 +52,7 @@ jobs:
             while (( SECONDS < TIMEOUT )); do
               LOGS_RESULTS_TAIL=$(docker logs flight-crawler --tail 1)
               echo "LOGS_RESULTS_TAIL -> $LOGS_RESULTS_TAIL"
-              LOGS_RESULT=$(docker logs flight-crawler --tail 5 | head -n 1)
+              LOGS_RESULT=$(docker logs flight-crawler --tail 3 | head -n 1)
               echo "LOGS_RESULT -> $LOGS_RESULT"
               echo "Checking results"
               echo $LOGS_RESULT
