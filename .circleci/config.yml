@@ -82,7 +82,6 @@ jobs:
             DESTINATION_DATE=$(date '+%d/%m/%Y' -d "+5 days")
             echo "Destination Date: $DESTINATION_DATE"
 
-            docker network create mybridge
             docker container run -d --rm --name flight-crawler \
               -e RUN_LOCALLY_WITH_HEADER='FALSE' \
               -e GENERIC_DESTINATION='FALSE' \
