@@ -62,6 +62,8 @@ jobs:
                 exit 0
               fi
               if [[ "$LOGS_RESULTS_TAIL" == "REPORT"* ]]; then
+                echo "Printing logs of the container..."
+                docker logs flight-crawler
                 break
               fi
               sleep 1
@@ -116,6 +118,8 @@ jobs:
                 exit 0
               fi
               if [[ "$LOGS_RESULTS_TAIL" == "REPORT"* ]]; then
+                echo "Printing logs of the container..."
+                docker logs flight-crawler
                 break
               fi
               sleep 1
