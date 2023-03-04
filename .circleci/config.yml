@@ -40,16 +40,25 @@ jobs:
       - run:
           name: Check if crawler run correctly
           command: |
-            TIMEOUT=120 # time to timeout in seconds
+            TIMEOUT=5 # time to timeout in seconds
 
             SECONDS=0
             while (( SECONDS < TIMEOUT )); do
+              LOGS_RESULTS_TAIL=$(docker logs flight-crawler --tail 1)
+              echo "LOGS_RESULTS_TAIL -> $LOGS_RESULTS_TAIL"
               LOGS_RESULT=$(docker logs flight-crawler --tail 5 | head -n 1)
+              echo "LOGS_RESULT -> $LOGS_RESULT"
+              echo "Checking results"
               echo $LOGS_RESULT
               if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
                 exit 0
               fi
+              if [[ "$LOGS_RESULTS_TAIL" == "REPORT"* ]]; then
+                break
+              fi
+              sleep 1
             done
+            echo "Something went wrong.... Printing the logs of the container:"
             docker logs flight-crawler
             exit 1
   build-and-push:
