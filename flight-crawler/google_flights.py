@@ -106,7 +106,7 @@ class GoogleFlightsCrawler(Crawler):
     def __get_price_and_currency(self, price: str) -> Tuple[str, int]:
         number = []
         currency = []
-        for char in a:
+        for char in price:
             if char.isdigit():
                 number.append(char)
             else:
