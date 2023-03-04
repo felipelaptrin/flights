@@ -52,19 +52,17 @@ jobs:
             while (( SECONDS < TIMEOUT )); do
               LOGS_RESULTS_TAIL=$(docker logs flight-crawler --tail 1)
               echo "LOGS_RESULTS_TAIL -> $LOGS_RESULTS_TAIL"
-              LOGS_RESULT=$(docker logs flight-crawler --tail 3 | head -n 1)
-              echo "LOGS_RESULT -> $LOGS_RESULT"
-              echo "Checking results"
-              echo $LOGS_RESULT
-              if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
-                echo "Success! Printing logs of the container..."
-                docker logs flight-crawler
-                exit 0
-              fi
               if [[ "$LOGS_RESULTS_TAIL" == "REPORT"* ]]; then
                 echo "Printing logs of the container..."
                 docker logs flight-crawler
                 break
+              fi
+              LOGS_RESULT=$(docker logs flight-crawler --tail 3 | head -n 1)
+              echo "LOGS_RESULT -> $LOGS_RESULT"
+              if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
+                echo "Success! Printing logs of the container..."
+                docker logs flight-crawler
+                exit 0
               fi
               sleep 1
             done
@@ -108,19 +106,17 @@ jobs:
             while (( SECONDS < TIMEOUT )); do
               LOGS_RESULTS_TAIL=$(docker logs flight-crawler --tail 1)
               echo "LOGS_RESULTS_TAIL -> $LOGS_RESULTS_TAIL"
-              LOGS_RESULT=$(docker logs flight-crawler --tail 3 | head -n 1)
-              echo "LOGS_RESULT -> $LOGS_RESULT"
-              echo "Checking results"
-              echo $LOGS_RESULT
-              if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
-                echo "Success! Printing logs of the container..."
-                docker logs flight-crawler
-                exit 0
-              fi
               if [[ "$LOGS_RESULTS_TAIL" == "REPORT"* ]]; then
                 echo "Printing logs of the container..."
                 docker logs flight-crawler
                 break
+              fi
+              LOGS_RESULT=$(docker logs flight-crawler --tail 3 | head -n 1)
+              echo "LOGS_RESULT -> $LOGS_RESULT"
+              if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
+                echo "Success! Printing logs of the container..."
+                docker logs flight-crawler
+                exit 0
               fi
               sleep 1
             done
