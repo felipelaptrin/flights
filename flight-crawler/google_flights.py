@@ -88,7 +88,7 @@ class GoogleFlightsCrawler(Crawler):
 
         try:
             self.wait_presence(max_timeout, path)
-            print("Results loaded...")
+            self.logger.info("Results loaded...")
         except:
             print("Not able to load results!")
 
@@ -166,5 +166,7 @@ class GoogleFlightsCrawler(Crawler):
         self.set_dates()
         self.wait_search_results()
         results = self.__get_all_flight_results()
+
+        self.logger.info(f"Crawled results => {results}")
 
         return results
