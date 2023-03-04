@@ -10,11 +10,12 @@ executors:
 
 jobs:
   test_crawler:
-    executor: docker-base
+    machine:
+      image: ubuntu-2004:202107-01
     resource_class: small
     steps:
       - checkout
-      - setup_remote_docker
+      # - setup_remote_docker
       - run:
           name: Build docker container
           command: |
