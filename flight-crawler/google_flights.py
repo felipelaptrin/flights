@@ -265,4 +265,6 @@ class GoogleFlightsCrawler(Crawler):
         self.set_dates()
         self.wait_specific_destination_search_results()
         results = self.__get_all_flight_results_specific_destination()
-        print(results)
+        self.logger.info(f"Crawled results => {results}")
+
+        return results

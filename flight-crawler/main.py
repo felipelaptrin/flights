@@ -22,8 +22,6 @@ def handler(event=None, context=None):
             results = google_flight_crawler.crawl_specific_destination()
         if results:
             Database().store_results(results)
-
-        if results:
             print("SUCCESS")  #! DO NOT DELETE - USED DURING CI TESTS
         return {"statusCode": 200, "body": "Crawler run successfully"}
     except Exception as e:
