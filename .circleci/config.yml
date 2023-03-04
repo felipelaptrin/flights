@@ -57,6 +57,8 @@ jobs:
               echo "Checking results"
               echo $LOGS_RESULT
               if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
+                echo "Success! Printing logs of the container..."
+                docker logs flight-crawler
                 exit 0
               fi
               if [[ "$LOGS_RESULTS_TAIL" == "REPORT"* ]]; then
