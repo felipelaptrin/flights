@@ -23,8 +23,8 @@ jobs:
       - run:
           name: Run test
           command: |
-            ORIGIN_DATE=$(date '+%d-%m-%Y')
-            DESTINATION_DATE=$(date '+%d-%m-%Y' -d "+5 days")
+            ORIGIN_DATE=$(date '+%d/%m/%Y')
+            DESTINATION_DATE=$(date '+%d/%m/%Y' -d "+5 days")
 
             docker network create mybridge
             docker container run -d --rm --name flight-crawler \
