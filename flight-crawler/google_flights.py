@@ -1,7 +1,7 @@
 import re
 import time
 from datetime import datetime
-from typing import List
+from typing import List, Tuple
 
 from config import DATE_FORMAT, GOOGLE_FLIGHTS_URL
 from crawler import Crawler
@@ -103,6 +103,22 @@ class GoogleFlightsCrawler(Crawler):
 
         return info_not_parsed
 
+    def __get_price_and_currency(self, price: str) -> Tuple[str, int]:
+        number = []
+        currency = []
+        for char in a:
+            if char.isdigit():
+                number.append(char)
+            else:
+                currency.append(char)
+
+        currency = "".join(currency)
+        print(currency)
+        number = int("".join(number))
+        print(number)
+
+        return (number, currency)
+
     def parse_destination_info(self, info_not_parsed: str) -> dict:
         info_not_parsed = info_not_parsed.split("\n")
 
@@ -124,7 +140,7 @@ class GoogleFlightsCrawler(Crawler):
             duration_min = 0
         duration_hours_float = float(duration_hours + duration_min / 60)
 
-        price = price.replace("R$", "").replace(",", "")
+        price, currency = self.__get_price_and_currency(price)
         price = int(price)
 
         return {
@@ -132,6 +148,7 @@ class GoogleFlightsCrawler(Crawler):
             "duration": duration_hours_float,
             "stops": number_of_stops,
             "price": price,
+            "currency": currency,
         }
 
     def __get_all_flight_results(self) -> List[dict]:
