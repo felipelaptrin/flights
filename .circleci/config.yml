@@ -10,12 +10,11 @@ executors:
 
 jobs:
   test_crawler:
-    machine:
-      image: ubuntu-2004:2022.07.1
+    executor: docker-base
     resource_class: small
     steps:
       - checkout
-      # - setup_remote_docker
+      - setup_remote_docker
       - run:
           name: Build docker container
           command: |
@@ -34,7 +33,7 @@ jobs:
               -e DB_COLLECTION \
               flight-crawler
             sleep 2
-            curl -XPOST "http://localhost:8080/2015-03-31/functions/function/invocations" \
+            docker container run curlimages/curl:7.88.1 "http://localhost:8080/2015-03-31/functions/function/invocations" \
               -d '{"minDepartureDateOrigin":"12/12/2023","maxDepartureDateDestination":"15/12/2023","origin":"Boston","destination":"Asia","minStayDays":5,"maxStayDays":7}'
       - run:
           name: Check if crawler run correctly
