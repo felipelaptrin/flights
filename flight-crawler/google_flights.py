@@ -111,7 +111,7 @@ class GoogleFlightsCrawler(Crawler):
         elif len(info_not_parsed) == 5:
             destination, price, stops, duration, _ = info_not_parsed
         else:
-            raise Exception("Results couldn't be parsed")
+            raise Exception(f"Results couldn't be parsed: {info_not_parsed}")
         destination = destination.strip()
 
         number_of_stops = int(stops.split("stop")[0])
