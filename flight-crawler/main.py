@@ -13,6 +13,7 @@ def handler(event=None, context=None):
             origin=event["origin"],
             destination=event["destination"],
         )
+        print(f"Parsed input event => {flight}")
         google_flight_crawler = GoogleFlightsCrawler(flight)
         if GENERIC_DESTINATION:
             results = google_flight_crawler.crawl_generic_destinations()
@@ -24,5 +25,5 @@ def handler(event=None, context=None):
         print("SUCCESS")  #! DO NOT DELETE - USED DURING CI TESTS
         return {"statusCode": 200, "body": "Crawler run successfully"}
     except Exception as e:
-        print(e)
+        print(f"Something went wrong: {e}")
         return {"statusCode": 500, "body": f"Something went wrong: {str(e)}"}
