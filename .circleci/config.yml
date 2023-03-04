@@ -43,7 +43,7 @@ jobs:
       - run:
           name: Check if crawler run correctly
           command: |
-            sleep 5
+            sleep 10
             TIMEOUT=5 # time to timeout in seconds
 
             SECONDS=0
