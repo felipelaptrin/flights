@@ -66,6 +66,7 @@ jobs:
               fi
               sleep 1
             done
+            LOGS_RESULT=$(docker logs flight-crawler --tail 3 | head -n 1)
             if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
               echo "Success! Printing logs of the container..."
               docker logs flight-crawler
