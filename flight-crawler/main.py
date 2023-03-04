@@ -26,14 +26,3 @@ def handler(event=None, context=None):
     except Exception as e:
         print(e)
         return {"statusCode": 500, "body": f"Something went wrong: {str(e)}"}
-
-
-handler(
-    {
-        "departureDateOrigin": "03/03/2023",
-        "departureDateDestination": "10/03/2023",
-        "origin": "Boston",
-        "destination": "Asia",
-    },
-    "",
-)
