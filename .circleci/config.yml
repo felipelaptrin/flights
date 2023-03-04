@@ -45,6 +45,7 @@ jobs:
       - run:
           name: Check if generic destination crawler run correctly
           command: |
+            sleep 2
             LOGS_RESULT=$(docker logs flight-crawler --tail 3 | head -n 1)
             echo "LOGS_RESULT -> $LOGS_RESULT"
             if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
