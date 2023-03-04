@@ -153,7 +153,7 @@ class GoogleFlightsCrawler(Crawler):
                 ] = self.departure_date_destination.strftime(DATE_FORMAT)
                 results.append(parsed_info)
             except Exception as e:
-                self.logger.error(f"Could not parse flight result")
+                self.logger.error(f"Could not parse flight result => {e}")
 
         self.logger.info("Flights results retrieved successfully")
         return results
