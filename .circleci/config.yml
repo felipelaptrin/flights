@@ -39,7 +39,7 @@ jobs:
               flight-crawler
             sleep 2
             docker container run --name run-crawler --network mybridge curlimages/curl:7.88.1 "http://flight-crawler:8080/2015-03-31/functions/function/invocations" \
-              -d '{"departureDateOrigin":"$ORIGIN_DATE","departureDateDestination":"$DESTINATION_DATE","origin":"Boston","destination":"Asia","minStayDays":5,"maxStayDays":7}'
+              -d "{\"departureDateOrigin\":\"$ORIGIN_DATE\",\"departureDateDestination\":\"$DESTINATION_DATE\",\"origin\":\"Boston\",\"destination\":\"Asia\",\"minStayDays\":5,\"maxStayDays\":7}"
       - run:
           name: Check if crawler run correctly
           command: |
