@@ -1,7 +1,7 @@
 import re
 import time
 from datetime import datetime
-from typing import List
+from typing import List, Tuple
 
 from config import DATE_FORMAT, GOOGLE_FLIGHTS_URL
 from crawler import Crawler
@@ -88,7 +88,7 @@ class GoogleFlightsCrawler(Crawler):
 
         try:
             self.wait_presence(max_timeout, path)
-            print("Results loaded...")
+            self.logger.info("Results loaded...")
         except:
             print("Not able to load results!")
 
@@ -103,6 +103,22 @@ class GoogleFlightsCrawler(Crawler):
 
         return info_not_parsed
 
+    def __get_price_and_currency(self, price: str) -> Tuple[str, int]:
+        number = []
+        currency = []
+        for char in price:
+            if char.isdigit():
+                number.append(char)
+            else:
+                currency.append(char)
+
+        currency = "".join(currency)
+        print(currency)
+        number = int("".join(number))
+        print(number)
+
+        return (number, currency)
+
     def parse_destination_info(self, info_not_parsed: str) -> dict:
         info_not_parsed = info_not_parsed.split("\n")
 
@@ -111,7 +127,7 @@ class GoogleFlightsCrawler(Crawler):
         elif len(info_not_parsed) == 5:
             destination, price, stops, duration, _ = info_not_parsed
         else:
-            raise Exception("Results couldn't be parsed")
+            raise Exception(f"Results couldn't be parsed: {info_not_parsed}")
         destination = destination.strip()
 
         number_of_stops = int(stops.split("stop")[0])
@@ -124,7 +140,7 @@ class GoogleFlightsCrawler(Crawler):
             duration_min = 0
         duration_hours_float = float(duration_hours + duration_min / 60)
 
-        price = price.replace("R$", "").replace(",", "")
+        price, currency = self.__get_price_and_currency(price)
         price = int(price)
 
         return {
@@ -132,6 +148,7 @@ class GoogleFlightsCrawler(Crawler):
             "duration": duration_hours_float,
             "stops": number_of_stops,
             "price": price,
+            "currency": currency,
         }
 
     def __get_all_flight_results(self) -> List[dict]:
@@ -153,7 +170,7 @@ class GoogleFlightsCrawler(Crawler):
                 ] = self.departure_date_destination.strftime(DATE_FORMAT)
                 results.append(parsed_info)
             except Exception as e:
-                self.logger.error(f"Could not parse flight result")
+                self.logger.error(f"Could not parse flight result => {e}")
 
         self.logger.info("Flights results retrieved successfully")
         return results
@@ -166,5 +183,7 @@ class GoogleFlightsCrawler(Crawler):
         self.set_dates()
         self.wait_search_results()
         results = self.__get_all_flight_results()
+
+        self.logger.info(f"Crawled results => {results}")
 
         return results

@@ -4,13 +4,73 @@ orbs:
   aws-ecr: circleci/aws-ecr@8.2.1
 
 executors:
-  docker-python:
+  docker-base:
     docker:
       - image: cimg/base:2023.02
 
 jobs:
+  test_crawler:
+    executor: docker-base
+    resource_class: small
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build docker container
+          command: |
+            cd flight-crawler
+            docker build -t flight-crawler .
+      - run:
+          name: Run test
+          command: |
+            ORIGIN_DATE=$(date '+%d/%m/%Y')
+            echo "Origin Date: $ORIGIN_DATE"
+            DESTINATION_DATE=$(date '+%d/%m/%Y' -d "+5 days")
+            echo "Destination Date: $DESTINATION_DATE"
+
+            docker network create mybridge
+            docker container run -d --rm --name flight-crawler \
+              -e RUN_LOCALLY_WITH_HEADER='FALSE' \
+              -e CLUSTER_ID \
+              -e DB_USER \
+              -e DB_PASSWORD \
+              -e DB_NAME \
+              -e DB_CLUSTER \
+              -e DB_COLLECTION \
+              --network mybridge \
+              flight-crawler
+            sleep 2
+            docker container run --name run-crawler --network mybridge curlimages/curl:7.88.1 "http://flight-crawler:8080/2015-03-31/functions/function/invocations" \
+              -d "{\"departureDateOrigin\":\"$ORIGIN_DATE\",\"departureDateDestination\":\"$DESTINATION_DATE\",\"origin\":\"Boston\",\"destination\":\"Asia\",\"minStayDays\":5,\"maxStayDays\":7}"
+      - run:
+          name: Check if crawler run correctly
+          command: |
+            sleep 10
+            TIMEOUT=5 # time to timeout in seconds
+
+            SECONDS=0
+            while (( SECONDS < TIMEOUT )); do
+              LOGS_RESULTS_TAIL=$(docker logs flight-crawler --tail 1)
+              echo "LOGS_RESULTS_TAIL -> $LOGS_RESULTS_TAIL"
+              LOGS_RESULT=$(docker logs flight-crawler --tail 3 | head -n 1)
+              echo "LOGS_RESULT -> $LOGS_RESULT"
+              echo "Checking results"
+              echo $LOGS_RESULT
+              if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
+                echo "Success! Printing logs of the container..."
+                docker logs flight-crawler
+                exit 0
+              fi
+              if [[ "$LOGS_RESULTS_TAIL" == "REPORT"* ]]; then
+                break
+              fi
+              sleep 1
+            done
+            echo "Something went wrong.... Printing the logs of the container:"
+            docker logs flight-crawler
+            exit 1
   build-and-push:
-    executor: docker-python
+    executor: docker-base
     resource_class: small
     parameters:
       repo-name:
@@ -42,15 +102,22 @@ jobs:
 workflows:
   build-and-deploy:
     jobs:
+      - test_crawler:
+          context:
+            - DatabaseCredentials
       - build-and-push:
           name: build-crawler
           repo-name: flights-crawler
           folder-name: flight-crawler
           context:
             - CircleCI-OIDC
+          requires:
+            - test_crawler
       - build-and-push:
           name: build-manager
           repo-name: flights-manager
           folder-name: flight-manager
           context:
             - CircleCI-OIDC
+          requires:
+            - test_crawler
