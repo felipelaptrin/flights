@@ -29,3 +29,12 @@ class Flights(BaseModel):
         if v > values["departure_date_destination"]:
             raise Exception("departureDateOrigin can't be before than departureDateDestination")
         return v
+
+    @validator("isGenericDestination")
+    def validate_generic_destination(cls, v):
+        if isinstance(v) == str:
+            value = True if v.upper() == "TRUE" else False
+        elif isinstance(v) == bool:
+            return v
+        else:
+            raise Exception("isGenericDestination must be a boolean!")
