@@ -15,7 +15,6 @@ def handler(event=None, context=None):
         )
         print(f"Parsed input event => {flight}")
         google_flight_crawler = GoogleFlightsCrawler(flight)
-        google_flight_crawler.crawl_specific_destination()
         if GENERIC_DESTINATION:
             results = google_flight_crawler.crawl_generic_destinations()
         else:

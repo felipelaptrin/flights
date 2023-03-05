@@ -56,7 +56,7 @@ jobs:
             fi
             echo "Something went wrong.... Printing the logs of the container:"
             docker logs flight-crawler
-            sleep 1
+            exit 1
       - run:
           name: Kill containers
           command: |
@@ -98,7 +98,7 @@ jobs:
             fi
             echo "Something went wrong.... Printing the logs of the container:"
             docker logs flight-crawler
-            sleep 1
+            exit 1
   build-and-push:
     executor: docker-base
     resource_class: small
