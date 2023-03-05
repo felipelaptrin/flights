@@ -162,7 +162,7 @@ jobs:
           assume-web-identity: true
           role-arn: $AWS_ROLE_OIDC
       - run:
-          name: Check changes in crawler folder
+          name: Check changes in folder
           command: |
             REF=HEAD
             SINCE=origin/main
