@@ -29,3 +29,15 @@ def handler(event=None, context=None):
     except Exception as e:
         print(f"Something went wrong: {e}")
         return {"statusCode": 500, "body": f"Something went wrong: {str(e)}"}
+
+
+handler(
+    {
+        "departureDateOrigin": "15/05/2023",
+        "departureDateDestination": "20/05/2023",
+        "origin": "Boston",
+        "destination": "Asia",
+        "isGenericDestination": True,
+    },
+    "",
+)

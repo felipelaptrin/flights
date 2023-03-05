@@ -152,6 +152,9 @@ jobs:
       folder-name:
         type: string
         description: Name of the folder containing the code
+      lambda-name:
+        type: string
+        description: Name of the Lambda function to update the code based on the new pushed image
     steps:
       - checkout
       - setup_remote_docker
@@ -171,6 +174,9 @@ jobs:
             if [[ -n $FILES_CHANGED ]]; then
               docker buildx build -f << parameters.folder-name >>/Dockerfile -t $AWS_ECR_REGISTRY_ID.dkr.ecr.$AWS_REGION.amazonaws.com/<< parameters.repo-name >>:latest --platform linux/amd64 --progress plain --push << parameters.folder-name >>
             fi
+      - run:
+          name: Update Lambda code
+          command: aws lambda update-function-code --function-name << parameters.lambda-name >> --image-uri $AWS_ECR_REGISTRY_ID.dkr.ecr.$AWS_REGION.amazonaws.com/<< parameters.repo-name >>:latest
 
 workflows:
   build-and-deploy:
