@@ -10,6 +10,7 @@ class Flights(BaseModel):
     origin: str
     destination: str
     is_generic_destination: bool
+    currency: str
 
     @validator(
         "departure_date_origin",
@@ -38,3 +39,15 @@ class Flights(BaseModel):
             return v
         else:
             raise Exception("isGenericDestination must be a boolean!")
+
+    @validator("currency", pre=True, check_fields=False)
+    def validate_currency(cls, v):
+        if isinstance(v, str):
+            currency = v.strip()
+            if len(currency) != 3:
+                raise Exception(
+                    f"Currency '{currency}' is not a valid currency! It must be 3 letters long (e.g. USD, EUR)"
+                )
+            return currency.upper()
+
+        return "USD"

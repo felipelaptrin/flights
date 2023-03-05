@@ -12,7 +12,7 @@ from selenium.webdriver.common.keys import Keys
 class GoogleFlightsCrawler(Crawler):
     def __init__(self, flight: Flights):
         super().__init__(flight)
-        self.url = GOOGLE_FLIGHTS_URL
+        self.url = f"{GOOGLE_FLIGHTS_URL}&curr={self.currency}"
 
     def __input_date(
         self, date: datetime, xpath: str, xpath_selected: str, reset_dates: bool = False

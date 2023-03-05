@@ -21,6 +21,7 @@ class FlightsManager:
         self.origin = flights.origin
         self.destination = flights.destination
         self.is_generic_destination = flights.is_generic_destination
+        self.currency = flights.currency
         self.__logger_level = LOGGER_LEVEL
         self.logger = self.__get_logger()
 
@@ -70,6 +71,7 @@ class FlightsManager:
                     "origin": self.origin,
                     "destination": self.destination,
                     "isGenericDestination": self.is_generic_destination,
+                    "currency": self.currency,
                 },
             ),
             encoding="utf8",

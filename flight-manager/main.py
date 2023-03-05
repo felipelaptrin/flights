@@ -13,6 +13,7 @@ def handler(event=None, context=None):
             min_stay_days=event["minStayDays"],
             max_stay_days=event["maxStayDays"],
             is_generic_destination=event["isGenericDestination"],
+            currency=event.get("currency"),
         )
 
         fm = FlightsManager(flights)
