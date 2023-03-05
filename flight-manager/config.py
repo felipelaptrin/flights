@@ -1,5 +1,12 @@
 import os
 
+
+def boolean_string_to_bool(string: str) -> bool:
+    if string.upper() == "TRUE":
+        return True
+    return False
+
+
 # SET PYTHON LOGGING LEVEL
 LOGGER_LEVEL = os.getenv("LOGGER_LEVEL", "INFO")
 
@@ -17,4 +24,4 @@ AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 DATE_FORMAT = "%d/%m/%Y"
 
 # IF DRY_RUN MODE IS ENABLED THE LAMBDAS WILL NOT BE TRIGGERED. ACCEPT 'TRUE' and 'FALSE'
-DRY_RUN = os.getenv("DRY_RUN", "TRUE")
+DRY_RUN = boolean_string_to_bool(os.getenv("DRY_RUN", "TRUE"))
