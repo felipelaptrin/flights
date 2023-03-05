@@ -1,6 +1,6 @@
 FROM alpine:3.17.2 as build
 RUN apk update && apk add zip curl
-RUN curl -Lo "/tmp/chromedriver.zip" "https://chromedriver.storage.googleapis.com/110.0.5481.30/chromedriver_linux64.zip" && \
+RUN curl -Lo "/tmp/chromedriver.zip" "https://chromedriver.storage.googleapis.com/111.0.5563.19/chromedriver_linux64.zip" && \
     curl -Lo "/tmp/chrome-linux.zip" "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F1070081%2Fchrome-linux.zip?alt=media" && \
     unzip /tmp/chromedriver.zip -d /opt/ && \
     unzip /tmp/chrome-linux.zip -d /opt/
