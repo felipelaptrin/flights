@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from config import DATE_FORMAT
 from pydantic import BaseModel, validator
@@ -14,7 +13,7 @@ class Flights(BaseModel):
     min_stay_days: PositiveInt
     max_stay_days: PositiveInt
     is_generic_destination: bool
-    currency: Optional[str] = "USD"
+    currency: str
 
     @validator(
         "min_departure_date_origin",
@@ -43,11 +42,14 @@ class Flights(BaseModel):
             raise Exception("minStayDays must be higher than maxStayDays")
         return v
 
-    @validator("currency")
+    @validator("currency", pre=True, check_fields=False)
     def validate_currency(cls, v):
-        currency = v.strip()
-        if len(currency) != 3:
-            raise Exception(
-                f"Currency '{currency}' is not a valid currency! It must be 3 letters long (e.g. USD, EUR)"
-            )
-        return currency.upper()
+        if isinstance(v, str):
+            currency = v.strip()
+            if len(currency) != 3:
+                raise Exception(
+                    f"Currency '{currency}' is not a valid currency! It must be 3 letters long (e.g. USD, EUR)"
+                )
+            return currency.upper()
+
+        return "USD"
