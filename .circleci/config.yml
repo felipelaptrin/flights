@@ -9,7 +9,50 @@ executors:
       - image: cimg/base:2023.02
 
 jobs:
-  test_crawler:
+  test-manager:
+    executor: docker-base
+    resource_class: small
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build docker container
+          command: |
+            cd flight-manager
+            docker build -t flight-manager .
+            docker network create mybridge
+      - run:
+          name: Run manager container
+          command: |
+            ORIGIN_DATE=$(date '+%d/%m/%Y' -d "+2 days")
+            echo "Origin Date: $ORIGIN_DATE"
+            DESTINATION_DATE=$(date '+%d/%m/%Y' -d "+15 days")
+            echo "Destination Date: $DESTINATION_DATE"
+
+            docker container run -d --rm --name flight-manager \
+              -e DRY_RUN='TRUE' \
+              --network mybridge \
+              flight-manager
+            sleep 2
+            docker container run --name run-manager --network mybridge curlimages/curl:7.88.1 "http://flight-manager:8080/2015-03-31/functions/function/invocations" \
+              -d "{\"minDepartureDateOrigin\":\"$ORIGIN_DATE\",\"maxDepartureDateDestination\":\"$DESTINATION_DATE\",\"origin\":\"Boston\",\"destination\":\"Asia\",\"minStayDays\":5,\"maxStayDays\":7,\"isGenericDestination\":true}"
+      - run:
+          name: Check if flights manager ran correctly
+          command: |
+            sleep 2
+            docker logs flight-manager --tail 3 > /tmp/logs.txt
+            LOGS_RESULT=$(head /tmp/logs.txt -n 1)
+            echo "LOGS_RESULT -> $LOGS_RESULT"
+            if [[ "$LOGS_RESULT" == "SUCCESS" ]]; then
+              echo "Success! Printing logs of the container..."
+              docker logs flight-manager
+              exit 0
+            fi
+            echo "Something went wrong.... Printing the logs of the container:"
+            docker logs flight-manager
+            exit 1
+
+  test-crawler:
     executor: docker-base
     resource_class: small
     steps:
@@ -41,9 +84,9 @@ jobs:
               flight-crawler
             sleep 2
             docker container run --name run-crawler --network mybridge curlimages/curl:7.88.1 "http://flight-crawler:8080/2015-03-31/functions/function/invocations" \
-              -d "{\"departureDateOrigin\":\"$ORIGIN_DATE\",\"departureDateDestination\":\"$DESTINATION_DATE\",\"origin\":\"Boston\",\"destination\":\"Asia\",\"minStayDays\":5,\"maxStayDays\":7}"
+              -d "{\"departureDateOrigin\":\"$ORIGIN_DATE\",\"departureDateDestination\":\"$DESTINATION_DATE\",\"origin\":\"Boston\",\"destination\":\"Asia\",\"isGenericDestination\":true}"
       - run:
-          name: Check if generic destination crawler run correctly
+          name: Check if generic destination crawler ran correctly
           command: |
             sleep 2
             docker logs flight-crawler --tail 3 > /tmp/logs.txt
@@ -72,7 +115,6 @@ jobs:
 
             docker container run -d --rm --name flight-crawler \
               -e RUN_LOCALLY_WITH_HEADER='FALSE' \
-              -e GENERIC_DESTINATION='FALSE' \
               -e CLUSTER_ID \
               -e DB_USER \
               -e DB_PASSWORD \
@@ -83,9 +125,9 @@ jobs:
               flight-crawler
             sleep 2
             docker container run --name run-crawler --network mybridge curlimages/curl:7.88.1 "http://flight-crawler:8080/2015-03-31/functions/function/invocations" \
-              -d "{\"departureDateOrigin\":\"$ORIGIN_DATE\",\"departureDateDestination\":\"$DESTINATION_DATE\",\"origin\":\"Boston\",\"destination\":\"Paris\",\"minStayDays\":5,\"maxStayDays\":7}"
+              -d "{\"departureDateOrigin\":\"$ORIGIN_DATE\",\"departureDateDestination\":\"$DESTINATION_DATE\",\"origin\":\"Boston\",\"destination\":\"Paris\",\"isGenericDestination\":false}"
       - run:
-          name: Check if specific destination crawler run correctly
+          name: Check if specific destination crawler ran correctly
           command: |
             sleep 2
             docker logs flight-crawler --tail 3 > /tmp/logs.txt
@@ -99,6 +141,7 @@ jobs:
             echo "Something went wrong.... Printing the logs of the container:"
             docker logs flight-crawler
             exit 1
+
   build-and-push:
     executor: docker-base
     resource_class: small
@@ -109,6 +152,9 @@ jobs:
       folder-name:
         type: string
         description: Name of the folder containing the code
+      lambda-name:
+        type: string
+        description: Name of the Lambda function to update the code based on the new pushed image
     steps:
       - checkout
       - setup_remote_docker
@@ -116,7 +162,7 @@ jobs:
           assume-web-identity: true
           role-arn: $AWS_ROLE_OIDC
       - run:
-          name: Check changes in crawler folder
+          name: Check changes in folder
           command: |
             REF=HEAD
             SINCE=origin/main
@@ -128,26 +174,34 @@ jobs:
             if [[ -n $FILES_CHANGED ]]; then
               docker buildx build -f << parameters.folder-name >>/Dockerfile -t $AWS_ECR_REGISTRY_ID.dkr.ecr.$AWS_REGION.amazonaws.com/<< parameters.repo-name >>:latest --platform linux/amd64 --progress plain --push << parameters.folder-name >>
             fi
+      - run:
+          name: Update Lambda code
+          command: aws lambda update-function-code --function-name << parameters.lambda-name >> --image-uri $AWS_ECR_REGISTRY_ID.dkr.ecr.$AWS_REGION.amazonaws.com/<< parameters.repo-name >>:latest
 
 workflows:
   build-and-deploy:
     jobs:
-      - test_crawler:
+      - test-crawler:
           context:
             - DatabaseCredentials
+      - test-manager
       - build-and-push:
           name: build-crawler
           repo-name: flights-crawler
           folder-name: flight-crawler
+          lambda-name: flights-crawler
           context:
             - CircleCI-OIDC
           requires:
-            - test_crawler
+            - test-crawler
+            - test-manager
       - build-and-push:
           name: build-manager
           repo-name: flights-manager
           folder-name: flight-manager
+          lambda-name: flights-manager
           context:
             - CircleCI-OIDC
           requires:
-            - test_crawler
+            - test-crawler
+            - test-manager

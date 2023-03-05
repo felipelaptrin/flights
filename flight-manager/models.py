@@ -12,6 +12,7 @@ class Flights(BaseModel):
     destination: str
     min_stay_days: PositiveInt
     max_stay_days: PositiveInt
+    is_generic_destination: bool
 
     @validator(
         "min_departure_date_origin",
