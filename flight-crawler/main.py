@@ -1,8 +1,6 @@
-from config import DATABASE_SECRET_NAME, GENERIC_DESTINATION
 from database import Database
 from google_flights import GoogleFlightsCrawler
 from models import Flights
-from utils import get_secret
 
 
 def handler(event=None, context=None):
@@ -22,7 +20,6 @@ def handler(event=None, context=None):
         else:
             results = google_flight_crawler.crawl_specific_destination()
         if results:
-            get_secret(DATABASE_SECRET_NAME) if DATABASE_SECRET_NAME else None
             Database().store_results(results)
             print("SUCCESS")  #! DO NOT DELETE - USED DURING CI TESTS
         return {"statusCode": 200, "body": "Crawler run successfully"}

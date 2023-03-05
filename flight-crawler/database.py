@@ -4,6 +4,7 @@ from typing import List
 
 from config import (
     CLUSTER_ID,
+    DATABASE_SECRET_NAME,
     DB_CLUSTER,
     DB_COLLECTION,
     DB_NAME,
@@ -12,6 +13,7 @@ from config import (
     LOGGER_LEVEL,
 )
 from pymongo import MongoClient
+from utils import get_secret
 
 
 class Database:
@@ -30,12 +32,15 @@ class Database:
         return logger
 
     def __connect_db(self):
-        user = DB_USER
-        password = DB_PASSWORD
-        db_name = DB_NAME
-        cluster_name = DB_CLUSTER
-        cluster_id = CLUSTER_ID
-        collection_name = DB_COLLECTION
+        if DATABASE_SECRET_NAME:
+            get_secret(DATABASE_SECRET_NAME)
+        else:
+            user = DB_USER
+            password = DB_PASSWORD
+            db_name = DB_NAME
+            cluster_name = DB_CLUSTER
+            cluster_id = CLUSTER_ID
+            collection_name = DB_COLLECTION
         try:
             db_connection_string = f"mongodb+srv://{user}:{password}@{cluster_name}.{cluster_id}.mongodb.net/?retryWrites=true&w=majority"
             client = MongoClient(db_connection_string)
