@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from config import DATE_FORMAT
 from pydantic import BaseModel, validator
@@ -10,6 +11,7 @@ class Flights(BaseModel):
     origin: str
     destination: str
     is_generic_destination: bool
+    currency: Optional[str] = "USD"
 
     @validator(
         "departure_date_origin",
@@ -38,3 +40,12 @@ class Flights(BaseModel):
             return v
         else:
             raise Exception("isGenericDestination must be a boolean!")
+
+    @validator("currency")
+    def validate_currency(cls, v):
+        currency = v.strip()
+        if len(currency) != 3:
+            raise Exception(
+                f"Currency '{currency}' is not a valid currency! It must be 3 letters long (e.g. USD, EUR)"
+            )
+        return currency.upper()

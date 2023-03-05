@@ -12,6 +12,7 @@ def handler(event=None, context=None):
             origin=event["origin"],
             destination=event["destination"],
             is_generic_destination=event["isGenericDestination"],
+            currency=event["currency"],
         )
         print(f"Parsed input event => {flight}")
         google_flight_crawler = GoogleFlightsCrawler(flight)

@@ -23,3 +23,14 @@ def handler(event=None, context=None):
         return {"statusCode": 200, "body": "All crawler were triggered!"}
     except Exception as e:
         return {"statusCode": 500, "body": f"Error: {str(e)}"}
+
+
+{
+    "minDepartureDateOrigin": "01/06/2023",
+    "maxDepartureDateDestination": "10/06/2023",
+    "origin": "Recife",
+    "destination": "Europe",
+    "minStayDays": 7,
+    "maxStayDays": 8,
+    "isGenericDestination": "",
+}
