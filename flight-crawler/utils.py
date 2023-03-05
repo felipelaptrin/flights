@@ -14,4 +14,4 @@ def get_secret(secret_name: str) -> dict:
     cache = SecretCache(config=cache_config, client=client)
     secret = cache.get_secret_string(secret_name)
     print("Database secrets retrieved correctly!")
-    return secret
+    return json.loads(secret)
