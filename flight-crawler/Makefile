@@ -5,7 +5,12 @@ test:
 	docker container run -d --rm --name flight-crawler \
 		-e RUN_LOCALLY_WITH_HEADER='FALSE' \
 		-e LOGGER_LEVEL \
-		-e DATABASE_SECRET_NAME='arn:aws:secretsmanager:us-east-1:937168356724:secret:flights-crawler-database-43gsD5' \
+		-e CLUSTER_ID \
+		-e DB_USER \
+		-e DB_PASSWORD \
+		-e DB_NAME \
+		-e DB_CLUSTER \
+		-e DB_COLLECTION \
 		--network mybridge \
 		flight-crawler
 	sleep 2

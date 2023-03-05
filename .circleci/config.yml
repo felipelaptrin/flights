@@ -186,7 +186,7 @@ workflows:
             - DatabaseCredentials
       - test-manager
       - build-and-push:
-          name: build-crawler
+          name: build-and-push-crawler
           repo-name: flights-crawler
           folder-name: flight-crawler
           lambda-name: flights-crawler
@@ -196,7 +196,7 @@ workflows:
             - test-crawler
             - test-manager
       - build-and-push:
-          name: build-manager
+          name: build-and-push-manager
           repo-name: flights-manager
           folder-name: flight-manager
           lambda-name: flights-manager
