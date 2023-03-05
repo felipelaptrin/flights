@@ -41,7 +41,7 @@ class Crawler:
         options.headless = True
         options.binary_location = self.CHROME_BINARY_PATH
 
-        driver = uc.Chrome(self.CHROME_WEBDRIVER_BINARY_PATH, options=options)
+        driver = uc.Chrome(options=options)
         self.logger.debug("Selenium Driver set correctly")
         return driver
 
