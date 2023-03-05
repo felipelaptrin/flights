@@ -20,7 +20,3 @@ def get_secret(secret_name: str) -> dict:
     export_as_environment_variables(secret)
     print("Database secrets retrieved correctly!")
     return secret
-
-
-get_secret("flights-crawler-database")
-print(os.getenv("DB_NAME"))
