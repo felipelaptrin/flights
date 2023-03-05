@@ -237,7 +237,7 @@ class GoogleFlightsCrawler(Crawler):
         results = []
         for i in range(MAX_NUMBER_OF_RESULTS):
             try:
-                for xpath in [BEST_FLIGHTS_XPATH, OTHER_FLIGHTS_XPATH]:
+                for xpath in [OTHER_FLIGHTS_XPATH, BEST_FLIGHTS_XPATH]:
                     flight_xpath = xpath.replace("REPLACE", str(i))
                     flight_info = self.select(flight_xpath).text
                     flight_info_parsed = self.parse_destination_info_specific_destination(

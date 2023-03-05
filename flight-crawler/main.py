@@ -15,7 +15,6 @@ def handler(event=None, context=None):
         )
         print(f"Parsed input event => {flight}")
         google_flight_crawler = GoogleFlightsCrawler(flight)
-        google_flight_crawler.crawl_specific_destination()
         if GENERIC_DESTINATION:
             results = google_flight_crawler.crawl_generic_destinations()
         else:
@@ -27,14 +26,3 @@ def handler(event=None, context=None):
     except Exception as e:
         print(f"Something went wrong: {e}")
         return {"statusCode": 500, "body": f"Something went wrong: {str(e)}"}
-
-
-handler(
-    {
-        "departureDateOrigin": "14/03/2023",
-        "departureDateDestination": "25/03/2023",
-        "origin": "Recife",
-        "destination": "Paris",
-    },
-    "",
-)
