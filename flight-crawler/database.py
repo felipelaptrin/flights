@@ -34,13 +34,20 @@ class Database:
 
     def __connect_db(self):
         if DATABASE_SECRET_NAME:
-            get_secret(DATABASE_SECRET_NAME)
-        user = DB_USER
-        password = DB_PASSWORD
-        db_name = DB_NAME
-        cluster_name = DB_CLUSTER
-        cluster_id = CLUSTER_ID
-        collection_name = DB_COLLECTION
+            secrets = get_secret(DATABASE_SECRET_NAME)
+            user = secrets["DB_USER"]
+            password = secrets["DB_PASSWORD"]
+            db_name = secrets["DB_NAME"]
+            cluster_name = secrets["DB_CLUSTER"]
+            cluster_id = secrets["CLUSTER_ID"]
+            collection_name = secrets["DB_COLLECTION"]
+        else:
+            user = DB_USER
+            password = DB_PASSWORD
+            db_name = DB_NAME
+            cluster_name = DB_CLUSTER
+            cluster_id = CLUSTER_ID
+            collection_name = DB_COLLECTION
         try:
             db_connection_string = f"mongodb+srv://{user}:{password}@{cluster_name}.{cluster_id}.mongodb.net/?retryWrites=true&w=majority"
             client = MongoClient(db_connection_string)
