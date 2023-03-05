@@ -19,6 +19,5 @@ def get_secret(secret_name: str) -> dict:
     cache = SecretCache(config=cache_config, client=client)
     secret = cache.get_secret_string(secret_name)
     export_as_environment_variables(json.loads(secret))
-    print(os.getenv("DB_USER"))
     print("Database secrets retrieved correctly!")
     return secret

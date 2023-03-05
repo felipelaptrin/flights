@@ -35,10 +35,7 @@ class Database:
     def __connect_db(self):
         if DATABASE_SECRET_NAME:
             get_secret(DATABASE_SECRET_NAME)
-        print(os.getenv("DATABASE_SECRET_NAME"))
         user = DB_USER
-        print(os.getenv("DB_USER"))
-        print(user)
         password = DB_PASSWORD
         db_name = DB_NAME
         cluster_name = DB_CLUSTER
