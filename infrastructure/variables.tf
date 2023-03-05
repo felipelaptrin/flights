@@ -41,7 +41,7 @@ variable "manager_ecr_name" {
 }
 
 variable "manager_role_name" {
-  description = "Name of the IAM Role for the Flight Manager Lambda"
+  description = "Name of the IAM Role and IAM Policy for the Flight Manager Lambda"
   type        = string
   default     = "flights-manager"
 }

@@ -39,7 +39,7 @@ resource "aws_secretsmanager_secret_version" "database" {
 resource "aws_iam_policy" "crawler" {
   name        = var.crawler_role_name
   path        = "/"
-  description = "Allows Lambda to block/delete old Lambdas"
+  description = "Allows Lambda to retrieve Database secrets"
 
   policy = jsonencode({
     "Version" : "2012-10-17",
@@ -59,6 +59,29 @@ resource "aws_iam_policy" "crawler" {
   })
 }
 
+resource "aws_iam_policy" "manager" {
+  name        = var.manager_role_name
+  path        = "/"
+  description = "Allows Lambda to block/delete old Lambdas"
+
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Sid" : "SecretsManagerActions",
+        "Effect" : "Allow",
+        "Action" : [
+          "lambda:InvokeFunctionUrl",
+          "lambda:InvokeFunction",
+          "lambda:InvokeAsync"
+        ],
+        "Resource" : [
+          "${aws_lambda_function.crawler.arn}"
+        ]
+      }
+    ]
+  })
+}
 
 resource "aws_iam_role" "crawler" {
   name        = var.crawler_role_name
@@ -102,6 +125,7 @@ resource "aws_iam_role" "manager" {
   })
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+    aws_iam_policy.manager.arn
   ]
 }
 
