@@ -1,0 +1,25 @@
+import os
+
+import botocore
+import botocore.session
+from aws_secretsmanager_caching import SecretCache, SecretCacheConfig
+
+
+def export_as_environment_variables(dict: dict) -> None:
+    for key, value in dict.items():
+        os.environ[key] = value
+
+
+def get_secret(secret_name: str) -> dict:
+    print("Getting Database secrets from AWS...")
+    client = botocore.session.get_session().create_client("secretsmanager")
+    cache_config = SecretCacheConfig()
+    cache = SecretCache(config=cache_config, client=client)
+    secret = cache.get_secret_string(secret_name)
+    export_as_environment_variables(secret)
+    print("Database secrets retrieved correctly!")
+    return secret
+
+
+get_secret("flights-crawler-database")
+print(os.getenv("DB_NAME"))
