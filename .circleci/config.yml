@@ -189,7 +189,7 @@ workflows:
           name: build-crawler
           repo-name: flights-crawler
           folder-name: flight-crawler
-          lambda-name: flight-crawler
+          lambda-name: flights-crawler
           context:
             - CircleCI-OIDC
           requires:
@@ -199,7 +199,7 @@ workflows:
           name: build-manager
           repo-name: flights-manager
           folder-name: flight-manager
-          lambda-name: flight-manager
+          lambda-name: flights-manager
           context:
             - CircleCI-OIDC
           requires:
