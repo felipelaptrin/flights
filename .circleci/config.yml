@@ -10,7 +10,7 @@ executors:
 
 jobs:
   test-manager:
-    executor: docker-bae
+    executor: docker-base
     resource_class: small
     steps:
       - checkout
