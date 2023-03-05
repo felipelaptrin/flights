@@ -1,4 +1,5 @@
 import logging
+import os
 from logging import Logger
 from typing import List
 
@@ -34,13 +35,15 @@ class Database:
     def __connect_db(self):
         if DATABASE_SECRET_NAME:
             get_secret(DATABASE_SECRET_NAME)
-        else:
-            user = DB_USER
-            password = DB_PASSWORD
-            db_name = DB_NAME
-            cluster_name = DB_CLUSTER
-            cluster_id = CLUSTER_ID
-            collection_name = DB_COLLECTION
+        print(os.getenv("DATABASE_SECRET_NAME"))
+        user = DB_USER
+        print(os.getenv("DB_USER"))
+        print(user)
+        password = DB_PASSWORD
+        db_name = DB_NAME
+        cluster_name = DB_CLUSTER
+        cluster_id = CLUSTER_ID
+        collection_name = DB_COLLECTION
         try:
             db_connection_string = f"mongodb+srv://{user}:{password}@{cluster_name}.{cluster_id}.mongodb.net/?retryWrites=true&w=majority"
             client = MongoClient(db_connection_string)
@@ -58,3 +61,22 @@ class Database:
     ) -> None:
         self.collection.insert_many(documents)
         self.logger.info("Crawled dates saved in the Database!")
+
+
+Database().store_results(
+    [
+        {
+            {
+                "destination": "Phnom Penh",
+                "duration": 29.166666666666668,
+                "stops": 2,
+                "price": 7515,
+                "currency": "R$",
+                "id": "05032023192546506331",
+                "stay_days": 15,
+                "departure_date_origin": "10/09/2023",
+                "departure_date_destination": "25/09/2023",
+            }
+        }
+    ]
+)
