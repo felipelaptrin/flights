@@ -21,6 +21,7 @@ class FlightsManager:
         self.max_stay_days = flights.max_stay_days
         self.origin = flights.origin
         self.destination = flights.destination
+        self.is_generic_destination = flights.is_generic_destination
         self.__logger_level = LOGGER_LEVEL
         self.logger = self.__get_logger()
 
@@ -45,8 +46,8 @@ class FlightsManager:
             stay_days_range = self.max_stay_days - self.min_stay_days + 1
             for j in range(stay_days_range):
                 stay_days = self.min_stay_days + j
-                possible_departure_date_destination = (
-                    possible_departure_date_origin + timedelta(days=stay_days - 1)
+                possible_departure_date_destination = possible_departure_date_origin + timedelta(
+                    days=stay_days - 1
                 )
                 if possible_departure_date_destination > self.max_departure_date_destination:
                     continue
@@ -69,12 +70,15 @@ class FlightsManager:
                     ),
                     "origin": self.origin,
                     "destination": self.destination,
+                    "isGenericDestination": self.is_generic_destination,
                 },
             ),
             encoding="utf8",
         )
         try:
-            success_message = f"Triggered crawer on dates {departure_date_origin}-{departure_date_destination}"
+            success_message = (
+                f"Triggered crawer on dates {departure_date_origin}-{departure_date_destination}"
+            )
             if DRY_RUN == "TRUE":
                 self.logger.info(f"[DRY RUN] {success_message}")
             else:
@@ -111,6 +115,7 @@ def handler(event=None, context=None):
             destination=event["destination"],
             min_stay_days=event["minStayDays"],
             max_stay_days=event["maxStayDays"],
+            is_generic_destination=event["isGenericDestination"],
         )
 
         fm = FlightsManager(flights)

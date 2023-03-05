@@ -9,6 +9,7 @@ class Flights(BaseModel):
     departure_date_origin: datetime
     origin: str
     destination: str
+    is_generic_destination: bool
 
     @validator(
         "departure_date_origin",
@@ -26,7 +27,5 @@ class Flights(BaseModel):
     )
     def validate_range_date(cls, v, values):
         if v > values["departure_date_destination"]:
-            raise Exception(
-                "departureDateOrigin can't be before than departureDateDestination"
-            )
+            raise Exception("departureDateOrigin can't be before than departureDateDestination")
         return v

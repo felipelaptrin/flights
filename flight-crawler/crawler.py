@@ -26,6 +26,7 @@ class Crawler:
         self.timestamp = datetime.strftime(datetime.now(), "%d%m%Y%H%M%S%f")
         self.origin = flight.origin
         self.destination = flight.destination
+        self.is_generic_destination = flight.is_generic_destination
         self.departure_date_origin = flight.departure_date_origin
         self.departure_date_destination = flight.departure_date_destination
         self.stay_days = (self.departure_date_destination - self.departure_date_origin).days
