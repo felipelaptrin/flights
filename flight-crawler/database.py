@@ -61,22 +61,3 @@ class Database:
     ) -> None:
         self.collection.insert_many(documents)
         self.logger.info("Crawled dates saved in the Database!")
-
-
-Database().store_results(
-    [
-        {
-            {
-                "destination": "Phnom Penh",
-                "duration": 29.166666666666668,
-                "stops": 2,
-                "price": 7515,
-                "currency": "R$",
-                "id": "05032023192546506331",
-                "stay_days": 15,
-                "departure_date_origin": "10/09/2023",
-                "departure_date_destination": "25/09/2023",
-            }
-        }
-    ]
-)
