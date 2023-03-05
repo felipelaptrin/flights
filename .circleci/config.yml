@@ -84,7 +84,7 @@ jobs:
               flight-crawler
             sleep 2
             docker container run --name run-crawler --network mybridge curlimages/curl:7.88.1 "http://flight-crawler:8080/2015-03-31/functions/function/invocations" \
-              -d "{\"departureDateOrigin\":\"$ORIGIN_DATE\",\"departureDateDestination\":\"$DESTINATION_DATE\",\"origin\":\"Boston\",\"destination\":\"Asia\",\"isGenericDestination\":true}"
+              -d "{\"departureDateOrigin\":\"$ORIGIN_DATE\",\"departureDateDestination\":\"$DESTINATION_DATE\",\"origin\":\"Boston\",\"destination\":\"Asia\",\"isGenericDestination\":true,\"currency\":"BRL"}"
       - run:
           name: Check if generic destination crawler ran correctly
           command: |
@@ -125,7 +125,7 @@ jobs:
               flight-crawler
             sleep 2
             docker container run --name run-crawler --network mybridge curlimages/curl:7.88.1 "http://flight-crawler:8080/2015-03-31/functions/function/invocations" \
-              -d "{\"departureDateOrigin\":\"$ORIGIN_DATE\",\"departureDateDestination\":\"$DESTINATION_DATE\",\"origin\":\"Boston\",\"destination\":\"Paris\",\"isGenericDestination\":false}"
+              -d "{\"departureDateOrigin\":\"$ORIGIN_DATE\",\"departureDateDestination\":\"$DESTINATION_DATE\",\"origin\":\"Boston\",\"destination\":\"Paris\",\"isGenericDestination\":false,\"currency\":"BRL"}"
       - run:
           name: Check if specific destination crawler ran correctly
           command: |

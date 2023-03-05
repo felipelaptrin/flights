@@ -15,7 +15,6 @@ def handler(event=None, context=None):
             currency=event.get("currency"),
         )
         print(f"Parsed input event => {flight}")
-        raise Exception
         google_flight_crawler = GoogleFlightsCrawler(flight)
         if flight.is_generic_destination:
             results = google_flight_crawler.crawl_generic_destinations()
@@ -28,16 +27,3 @@ def handler(event=None, context=None):
     except Exception as e:
         print(f"Something went wrong: {e}")
         return {"statusCode": 500, "body": f"Something went wrong: {str(e)}"}
-
-
-handler(
-    {
-        "departureDateOrigin": "15/04/2023",
-        "departureDateDestination": "20/04/2023",
-        "origin": "Recife",
-        "destination": "Europe",
-        "isGenericDestination": True,
-        # "currency": "usd",
-    },
-    "",
-)
