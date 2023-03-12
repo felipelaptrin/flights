@@ -7,7 +7,7 @@ Let's give an example: you want to enjoy the summer season in Europe (you can se
 
 So you have the following inputs:
 - **Origin**: The city/airport that you are leaving (let's say Boston)
-- **Destination**: Where you want to travel to, can be a generic region (Asia, Latin America, Asia, a country/city with more than one airport in it) or specific (city/country with a single airport). In our case this is `Europe`
+- **Destination**: Where you want to travel to, can be a generic region (Asia, Latin America, Asia, a country/city with more than one airport in it) or specific (city/country with a single airport). In our case this is Europe
 - **Max initial**: 21/06/2023 (beginning of summer)
 - **Max final date**: 23/09/2023 (end of summer)
 - **Minimum stay**: 10
@@ -62,7 +62,7 @@ So one possible input would be:
     "minStayDays": 5,
     "maxStayDays": 10,
     "isGenericDestination": false,
-    "currency": "EUR",
+    "currency": "EUR"
 }
 ```
 
