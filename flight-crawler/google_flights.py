@@ -40,7 +40,7 @@ class GoogleFlightsCrawler(Crawler):
 
         DONE_BUTTON_XPATH = "/html/body/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[1]/div[1]/div[1]/div/div[2]/div[2]/div/div/div[2]/div/div[3]/div[3]/div/button/span"
 
-        SEARCH_BUTTON_XPATH = "/html/body/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[1]/div[1]/div[2]/div/button/div[1]"
+        SEARCH_BUTTON_XPATH = "/html/body/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[1]/div[1]/div[2]/div/button/span[2]"
 
         self.logger.info("Setting dates...")
         self.logger.info("Setting origin date")
@@ -57,7 +57,7 @@ class GoogleFlightsCrawler(Crawler):
             XPATH_DEPARTURE_DATE_DESTINATION_SELECTED,
         )
         self.click(DONE_BUTTON_XPATH)
-        self.wait_clickable(1, SEARCH_BUTTON_XPATH)
+        self.wait_clickable(2, SEARCH_BUTTON_XPATH)
         self.click(SEARCH_BUTTON_XPATH)
         self.logger.info("Dates set!")
 
