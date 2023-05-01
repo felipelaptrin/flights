@@ -40,6 +40,8 @@ class GoogleFlightsCrawler(Crawler):
 
         DONE_BUTTON_XPATH = "/html/body/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[1]/div[1]/div[1]/div/div[2]/div[2]/div/div/div[2]/div/div[3]/div[3]/div/button/span"
 
+        SEARCH_BUTTON_XPATH = "/html/body/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[1]/div[1]/div[2]/div/button/span[2]"
+
         self.logger.info("Setting dates...")
         self.logger.info("Setting origin date")
         self.__input_date(
@@ -55,6 +57,8 @@ class GoogleFlightsCrawler(Crawler):
             XPATH_DEPARTURE_DATE_DESTINATION_SELECTED,
         )
         self.click(DONE_BUTTON_XPATH)
+        self.wait_clickable(1, SEARCH_BUTTON_XPATH)
+        self.click(SEARCH_BUTTON_XPATH)
         self.logger.info("Dates set!")
 
     def __input_itinerary(self, place: str, xpath: str, xpath_selected: str) -> None:
@@ -182,9 +186,36 @@ class GoogleFlightsCrawler(Crawler):
         self.logger.info(f"To be parsed => {info_not_parsed}")
 
         if len(info_not_parsed) == 12:
-            _, _, _, _, duration, airports, number_of_stops, _, _, _, price, _ = info_not_parsed
+            (
+                _,
+                _,
+                _,
+                _,
+                duration,
+                airports,
+                number_of_stops,
+                _,
+                _,
+                _,
+                price,
+                _,
+            ) = info_not_parsed
         elif len(info_not_parsed) == 13:
-            _, _, _, _, _, duration, airports, number_of_stops, _, _, _, price, _ = info_not_parsed
+            (
+                _,
+                _,
+                _,
+                _,
+                _,
+                duration,
+                airports,
+                number_of_stops,
+                _,
+                _,
+                _,
+                price,
+                _,
+            ) = info_not_parsed
         else:
             raise Exception(f"Results couldn't be parsed: {info_not_parsed}")
 
@@ -228,12 +259,8 @@ class GoogleFlightsCrawler(Crawler):
     def __get_all_flight_results_specific_destination(self) -> List[dict]:
         self.logger.info("Retrieving all flights results...")
         MAX_NUMBER_OF_RESULTS = 40
-        BEST_FLIGHTS_XPATH = (
-            "/html/body/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[2]/div[3]/ul/li[REPLACE]"
-        )
-        OTHER_FLIGHTS_XPATH = (
-            "/html/body/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[2]/div[5]/ul/li[REPLACE]"
-        )
+        BEST_FLIGHTS_XPATH = "/html/body/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[2]/div[3]/ul/li[REPLACE]"
+        OTHER_FLIGHTS_XPATH = "/html/body/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[2]/div[5]/ul/li[REPLACE]"
         results = []
         for i in range(MAX_NUMBER_OF_RESULTS):
             try:
