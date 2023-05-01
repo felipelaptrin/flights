@@ -87,8 +87,8 @@ class GoogleFlightsCrawler(Crawler):
         try:
             self.wait_presence(max_timeout, path)
             self.logger.info("Results loaded...")
-        except:
-            print("Not able to load results!")
+        except Exception as e:
+            print(f"Not able to load results! Error: {e}")
 
     def wait_specific_destination_search_results(self, max_timeout: int = 15) -> None:
         self.logger.info("Waiting results to show up...")
