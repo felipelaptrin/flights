@@ -1,5 +1,6 @@
 from database import Database
 from google_flights import GoogleFlightsCrawler
+from max_milhas import MaxMilhasCrawler
 from models import Flights
 
 
@@ -15,15 +16,31 @@ def handler(event=None, context=None):
             currency=event.get("currency"),
         )
         print(f"Parsed input event => {flight}")
-        google_flight_crawler = GoogleFlightsCrawler(flight)
-        if flight.is_generic_destination:
-            results = google_flight_crawler.crawl_generic_destinations()
-        else:
-            results = google_flight_crawler.crawl_specific_destination()
-        if results:
-            Database().store_results(results)
-            print("SUCCESS")  #! DO NOT DELETE - USED DURING CI TESTS
+        max_milhas_crawler = MaxMilhasCrawler(flight)
+        max_milhas_crawler.crawl()
+
+        # google_flight_crawler = GoogleFlightsCrawler(flight)
+        # if flight.is_generic_destination:
+        #     results = google_flight_crawler.crawl_generic_destinations()
+        # else:
+        #     results = google_flight_crawler.crawl_specific_destination()
+        # if results:
+        #     Database().store_results(results)
+        # print("SUCCESS")  #! DO NOT DELETE - USED DURING CI TESTS
         return {"statusCode": 200, "body": "Crawler run successfully"}
     except Exception as e:
         print(f"Something went wrong: {e}")
         return {"statusCode": 500, "body": f"Something went wrong: {str(e)}"}
+
+
+handler(
+    {
+        "departureDateOrigin": "21/05/2023",
+        "departureDateDestination": "23/05/2023",
+        "origin": "Boston",
+        "destination": "Paris",
+        "isGenericDestination": False,
+        "currency": "BRL",
+    },
+    "",
+)

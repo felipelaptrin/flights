@@ -102,3 +102,6 @@ class Crawler:
             error_message = f"Inputted date is wrong! You wanted to input '{expected_value}' but '{actual_box_value}' was the input"
             self.logger.error(error_message)
             raise Exception(error_message)
+
+    def get_current_url(self) -> str:
+        return str(self.driver.current_url)

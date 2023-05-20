@@ -168,12 +168,9 @@ class GoogleFlightsCrawler(Crawler):
                 parsed_info = self.parse_destination_info_generic_destination(info)
                 parsed_info["id"] = self.timestamp
                 parsed_info["stay_days"] = self.stay_days
-                parsed_info["departure_date_origin"] = self.departure_date_origin.strftime(
-                    DATE_FORMAT
-                )
-                parsed_info[
-                    "departure_date_destination"
-                ] = self.departure_date_destination.strftime(DATE_FORMAT)
+                parsed_info["departure_date_origin"] = self.departure_date_origin
+                parsed_info["departure_date_destination"] = self.departure_date_destination
+                parsed_info["url"] = self.get_current_url()
                 results.append(parsed_info)
             except Exception as e:
                 self.logger.error(f"Could not parse flight result => {e}")
@@ -273,12 +270,11 @@ class GoogleFlightsCrawler(Crawler):
 
                     flight_info_parsed["id"] = self.timestamp
                     flight_info_parsed["stay_days"] = self.stay_days
-                    flight_info_parsed[
-                        "departure_date_origin"
-                    ] = self.departure_date_origin.strftime(DATE_FORMAT)
+                    flight_info_parsed["departure_date_origin"] = self.departure_date_origin
                     flight_info_parsed[
                         "departure_date_destination"
-                    ] = self.departure_date_destination.strftime(DATE_FORMAT)
+                    ] = self.departure_date_destination
+                    flight_info_parsed["url"] = self.get_current_url()
                     results.append(flight_info_parsed)
             except Exception as e:
                 self.logger.error(f"Could not parse flight result => {e}")

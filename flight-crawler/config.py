@@ -18,9 +18,8 @@ RUN_LOCALLY_WITH_HEADER = boolean_string_to_bool(os.getenv("RUN_LOCALLY_WITH_HEA
 
 # URL TO CRAWL
 GOOGLE_FLIGHTS_URL = os.getenv("GOOGLE_FLIGHTS_URL", "https://www.google.com/flights?hl=us")
+MAX_MILHAS_URL = os.getenv("GOOGLE_FLIGHTS_URL", "https://www.maxmilhas.com.br/")
 
-# IF DESTINATION IS GENERIC (REGION, CONTINENT..) AND NOT A COUNTRY/AIRPORT THIS MUST BE SET TO TRUE
-GENERIC_DESTINATION = boolean_string_to_bool(os.getenv("GENERIC_DESTINATION", "TRUE"))
 
 ################
 ### DB SETTINGS
